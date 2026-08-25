@@ -7,7 +7,7 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** fatia 4 concluída — o lead entra pela porta certa e a cadeia de validação anda sem nenhuma API real.
+**Fase:** fatia 5 parcial — fila, distribuição e réguas de pé no banco e na lógica. Falta o laço do worker que as consome.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -16,7 +16,8 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** fatia 5 — fila, distribuição e as três réguas de follow-up, com o worker.
+**Próximo marco:** fechar a fatia 5 com o laço do worker (drenar `agendamento` e `integracao_outbox`,
+disparar pelo portão de envio, aplicar disjuntor e reexecução). A base já está pronta e testada.
 Ver [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
@@ -120,6 +121,11 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 | D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                                                                                                                            |
 | D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                                                                                                                           |
 | D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                                                                                                                                  |
+| D45 | 2026-08-25 | **A espera na fila não tem teto.** É isso que faz o lead antigo alcançar o quente; um limite superior traria de volta o abandono que a regra existe para evitar.                                                                                                                                       |
+| D46 | 2026-08-25 | Capacidade zero do consultor significa **sem limite**, não fila parada — é o padrão de quem ainda não configurou.                                                                                                                                                                                      |
+| D47 | 2026-08-25 | Existe **um portão único de envio** com janela de 24 h, template aprovado, horário, consentimento e dono da conversa. Espalhar essas regras garantiria que um ponto de disparo esquecesse uma delas.                                                                                                   |
+| D48 | 2026-08-25 | O stub de WhatsApp **não finge entrega**: devolve `AGUARDANDO_CONECTOR`. Fingir faria a régua avançar sobre mensagens que nunca saíram.                                                                                                                                                                |
+| D49 | 2026-08-25 | O disjuntor só conta **falha de caminho**. Falha de conteúdo é culpa do payload, e contá-la puniria o fornecedor por erro nosso.                                                                                                                                                                       |
 | D41 | 2026-08-25 | **Formato e dígito verificador são lógica nossa**, não chamada externa. O conector enriquece (nome, endereço, modelo); conferir se o número é bem formado acontece antes, de graça.                                                                                                                    |
 | D42 | 2026-08-25 | Falha de conector é **valor, não exceção**: `Resultado<T>` com motivo, e `valeTentarDeNovo` separa falha de caminho (reexecuta) de falha de conteúdo (não adianta).                                                                                                                                    |
 | D43 | 2026-08-25 | Pedir conector não registrado **falha na hora**, sem recuar para o stub. Recuo silencioso faria a corretora operar sintética achando que é real.                                                                                                                                                       |
@@ -281,6 +287,7 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
 | 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
+| 2026-08-25 | **Fatia 5, primeira metade.** Prioridade da fila, distribuição com `SKIP LOCKED` e capacidade, três réguas com cadências reais, portão único de envio, disjuntor e reexecução, conector de WhatsApp com stub honesto. Fechadas D45–D49.                                           |
 | 2026-08-25 | **Fatia 4 entregue.** Validação de formato e dígito verificador, contrato de conector com stub validado por teste de contrato, cadeia de validação de §8.3, entrada de lead por canal com quarentena e webhook com assinatura. Fechadas D41–D44.                                  |
 | 2026-08-25 | **Design system Vidro Polar implementado.** Tokens em três camadas, tema claro e escuro em ciclo de três estados resolvido no servidor, seis componentes base com teste, densidade por área. Criado `design-system.md`. Fechadas D37–D40.                                         |
 | 2026-08-25 | **Fatia 3 entregue, mais o MFA que faltava da fatia 2.** 31 tabelas no total, máquina de estados com caminho único, deduplicação de contato e segundo fator completo. Dois defeitos reais achados pelos testes. Fechadas D32–D36.                                                 |
