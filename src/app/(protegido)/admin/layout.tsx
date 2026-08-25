@@ -1,8 +1,5 @@
 import type { ReactNode } from 'react';
-import { MolduraArea } from '@/componentes/moldura-area';
-import { exigirAcesso } from '@/seguranca/sessao';
-import { modoDeDados } from '@/seguranca/modo-dados';
-import { sair } from '@/app/(publico)/entrar/acoes';
+import { Area } from '../area';
 
 const MENU = [
   { rotulo: 'Visão geral', destino: '/admin/inicio' },
@@ -10,18 +7,10 @@ const MENU = [
   { rotulo: 'Integrações', destino: '/admin/integracoes' },
 ];
 
-export default async function Layout({ children }: { children: ReactNode }) {
-  const sessao = await exigirAcesso('/admin');
-
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <MolduraArea
-      modo={modoDeDados()}
-      acaoSair={sair}
-      titulo="Venitus.on · Plataforma"
-      nome={sessao.email}
-      menu={MENU}
-    >
+    <Area area="/admin" titulo="Venitus.on · Plataforma" menu={MENU} densidade="compacta">
       {children}
-    </MolduraArea>
+    </Area>
   );
 }

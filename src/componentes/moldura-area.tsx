@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { rotuloDoModo } from '@/seguranca/modo-dados';
+import type { ReactNode } from 'react';
+import { FaixaModo } from '@/componentes/base/faixa-modo';
 import type { ModoDados } from '@/seguranca/modo-dados';
 
 export interface ItemMenu {
@@ -7,34 +8,47 @@ export interface ItemMenu {
   readonly destino: string;
 }
 
+export type Densidade = 'confortavel' | 'compacta';
+
 interface Props {
   readonly titulo: string;
   readonly nome: string;
   readonly modo: ModoDados;
   readonly menu: readonly ItemMenu[];
+  readonly densidade?: Densidade;
+  /** Slot: a moldura não conhece o seletor, só reserva o lugar dele. */
+  readonly seletorTema?: ReactNode;
   readonly acaoSair: () => Promise<void>;
-  readonly children: React.ReactNode;
+  readonly children: ReactNode;
 }
 
 /**
  * Moldura comum às três áreas.
  *
- * Recebe o modo e a ação de sair por parâmetro em vez de importá-los. Isso a
+ * Recebe modo, seletor de tema e ação de sair por parâmetro em vez de
+ * importá-los. Isso a
  * mantém ignorante sobre autenticação e ambiente — e testável sem servidor.
  *
  * Recebe apenas o que a tela mostra. Nenhuma linha de banco atravessa a
  * fronteira (blueprint §4.3).
  */
-export function MolduraArea({ titulo, nome, modo, menu, acaoSair, children }: Props) {
+export function MolduraArea({
+  titulo,
+  nome,
+  modo,
+  menu,
+  densidade = 'confortavel',
+  seletorTema,
+  acaoSair,
+  children,
+}: Props) {
   return (
-    <div className="area">
-      {/* O modo de dados ativo aparece sempre, com cor própria (§18). */}
-      <div className={`faixa-modo faixa-modo--${modo}`} role="status">
-        {rotuloDoModo(modo)}
-      </div>
+    <div className="area" data-densidade={densidade}>
+      <FaixaModo modo={modo} />
 
       <header className="cabecalho">
         <strong>{titulo}</strong>
+
         <nav aria-label="Menu principal">
           {menu.map((item) => (
             <Link key={item.destino} href={item.destino}>
@@ -42,8 +56,10 @@ export function MolduraArea({ titulo, nome, modo, menu, acaoSair, children }: Pr
             </Link>
           ))}
         </nav>
+
         <div className="usuario">
           <span>{nome}</span>
+          {seletorTema}
           <form action={acaoSair}>
             <button type="submit" className="ligacao">
               Sair

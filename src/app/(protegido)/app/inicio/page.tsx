@@ -1,34 +1,34 @@
+import { Placa } from '@/componentes/base/placa';
+import { Botao } from '@/componentes/base/botao';
 import { obterSessao } from '@/seguranca/sessao';
 
-// A home responde a uma pergunta: "o que eu preciso fazer agora?" (blueprint §5.4).
-// Os números chegam na fatia 5, quando a fila existir.
+// A tela responde a uma pergunta: "o que eu preciso fazer agora?".
+// A ação vem antes do relatório. Os números chegam na fatia 5, com a fila.
 export default async function Pagina() {
   const sessao = await obterSessao();
 
   return (
     <>
-      <h1>Bom dia</h1>
-      <p className="apoio">{sessao?.email}</p>
+      <div>
+        <h1>Bom dia</h1>
+        <p className="apoio">{sessao?.email}</p>
+      </div>
 
-      <ul className="painel">
-        <li>
-          <strong>—</strong> clientes quentes
-        </li>
-        <li>
-          <strong>—</strong> aguardando atendimento
-        </li>
-        <li>
-          <strong>—</strong> cotações em andamento
-        </li>
-        <li>
-          <strong>—</strong> propostas com pendência
-        </li>
-      </ul>
+      <div className="grade-placas">
+        <Placa valor="—" descricao="clientes quentes" tom="quente" />
+        <Placa valor="—" descricao="aguardando atendimento" />
+        <Placa valor="—" descricao="cotações em andamento" />
+        <Placa valor="—" descricao="propostas com pendência" tom="atencao" />
+      </div>
 
-      <button type="button" className="acao" disabled>
-        Atender próximo cliente
-      </button>
-      <p className="apoio">A fila entra na fatia 5.</p>
+      <div>
+        <Botao variante="primario" disabled>
+          Atender Próximo Cliente
+        </Botao>
+        <p className="apoio" style={{ marginTop: 'var(--e2)' }}>
+          A fila entra na fatia 5 do plano.
+        </p>
+      </div>
     </>
   );
 }

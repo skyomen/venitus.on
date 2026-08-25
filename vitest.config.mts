@@ -41,6 +41,11 @@ export default defineConfig({
         // `perfil.ts` e `autorizacao.ts`.
         'src/seguranca/sessao.ts',
 
+        // Server Actions são pontos de entrada onde quer que morem: leem cookie,
+        // chamam serviço e redirecionam. A decisão que elas tomam vive em módulos
+        // puros e cobertos — `design/tema.ts`, `seguranca/credenciais.ts`.
+        'src/**/acoes.ts',
+
         // Tipos gerados a partir do schema do banco.
         'src/dados/tipos-gerados.ts',
       ],

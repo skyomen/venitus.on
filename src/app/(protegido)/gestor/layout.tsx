@@ -1,8 +1,5 @@
 import type { ReactNode } from 'react';
-import { MolduraArea } from '@/componentes/moldura-area';
-import { exigirAcesso } from '@/seguranca/sessao';
-import { modoDeDados } from '@/seguranca/modo-dados';
-import { sair } from '@/app/(publico)/entrar/acoes';
+import { Area } from '../area';
 
 const MENU = [
   { rotulo: 'Visão geral', destino: '/gestor/inicio' },
@@ -11,18 +8,11 @@ const MENU = [
   { rotulo: 'Configuração', destino: '/gestor/configuracao' },
 ];
 
-export default async function Layout({ children }: { children: ReactNode }) {
-  const sessao = await exigirAcesso('/gestor');
-
+// O gestor acompanha muita coisa de uma vez: densidade compacta (§06).
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <MolduraArea
-      modo={modoDeDados()}
-      acaoSair={sair}
-      titulo="Venitus.on · Gestão"
-      nome={sessao.email}
-      menu={MENU}
-    >
+    <Area area="/gestor" titulo="Venitus.on · Gestão" menu={MENU} densidade="compacta">
       {children}
-    </MolduraArea>
+    </Area>
   );
 }

@@ -1,0 +1,222 @@
+/**
+ * Vidro Polar — tokens do design system.
+ *
+ * Este é o único arquivo do projeto com valor hexadecimal. Componente lê token
+ * semântico; token semântico aponta para primitiva. Trocar de tema é reescrever
+ * a camada semântica, e nenhum componente muda.
+ *
+ * O sistema nasce escuro por identidade. O claro é uma escolha do usuário, não
+ * uma inversão automática: ele tem valores próprios, escolhidos para funcionar
+ * sobre branco.
+ */
+
+/* ==========================================================================
+   CAMADA 1 — PRIMITIVAS
+   Inventário de cor. Nenhum componente lê daqui.
+   ========================================================================== */
+:root {
+  --azul-900: #060f18;
+  --azul-850: #0a1622;
+  --azul-800: #0f1e2d;
+  --azul-700: #16304a;
+  --azul-100: #f2f6fa;
+  --azul-050: #ffffff;
+
+  --ciano-700: #0e7a93;
+  --ciano-600: #1f8ba5;
+  --ciano-500: #2e9db8;
+  --ciano-400: #46bdd6;
+  --ciano-300: #5fd4e8;
+  --ciano-200: #9fe7f2;
+
+  --neve-100: #e8f1f8;
+  --neve-300: #b8cbdb;
+  --neve-500: #8fa8bd;
+
+  --tinta-900: #0c1b27;
+  --tinta-700: #35485a;
+  --tinta-500: #5d7183;
+
+  --coral-600: #c24a22;
+  --coral-400: #ff8a5c;
+  --verde-600: #1d7a51;
+  --verde-400: #59d6a2;
+  --ambar-600: #8a6410;
+  --ambar-400: #f0c46a;
+  --rubi-600: #b32b41;
+  --rubi-400: #ff7b8e;
+
+  /* ========================================================================
+     CAMADA 2 — SEMÂNTICAS (escuro, o padrão)
+     ======================================================================== */
+  color-scheme: dark;
+
+  --superficie-base: var(--azul-850);
+  --superficie-atmosfera:
+    radial-gradient(120% 80% at 8% -10%, var(--azul-700) 0%, transparent 55%),
+    radial-gradient(90% 70% at 100% 0%, #10323c 0%, transparent 50%);
+  --superficie-1: rgb(255 255 255 / 0.05);
+  --superficie-2: rgb(255 255 255 / 0.08);
+  --superficie-3: rgb(255 255 255 / 0.12);
+
+  --texto-forte: var(--neve-100);
+  --texto-medio: var(--neve-300);
+  --texto-fraco: var(--neve-500);
+
+  --borda-sutil: rgb(255 255 255 / 0.1);
+  --borda-media: rgb(255 255 255 / 0.18);
+  --borda-forte: rgb(255 255 255 / 0.3);
+
+  --acao: var(--ciano-300);
+  --acao-sobre: var(--ciano-200);
+  --acao-texto: #04222b;
+  --foco: var(--ciano-200);
+
+  /* Estado é família reservada. Nunca vira "mais uma cor bonita". */
+  --quente: var(--coral-400);
+  --bom: var(--verde-400);
+  --atencao: var(--ambar-400);
+  --critico: var(--rubi-400);
+  --critico-fundo: rgb(255 123 142 / 0.14);
+  --critico-texto: var(--azul-900);
+
+  /* O vidro só existe no escuro. Ver `--painel-fundo` no bloco claro. */
+  --painel-fundo: var(--superficie-1);
+  --painel-desfoque: blur(14px);
+  --painel-luz: 0 1px 0 rgb(255 255 255 / 0.06) inset;
+  --painel-sombra: 0 8px 24px rgb(0 0 0 / 0.35);
+  --painel-sombra-2: 0 18px 44px rgb(0 0 0 / 0.45);
+
+  /* ---------------------------------------------------------------- espaço */
+  --e1: 0.25rem;
+  --e2: 0.5rem;
+  --e3: 0.75rem;
+  --e4: 1rem;
+  --e5: 1.5rem;
+  --e6: 2rem;
+  --e7: 3rem;
+  --e8: 4rem;
+
+  --raio-1: 6px;
+  --raio-2: 10px;
+  --raio-3: 14px;
+
+  /* --------------------------------------------------------------- tipos */
+  --fonte-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fonte-num: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --t-valor: 1.9rem;
+  --t-titulo: 1.55rem;
+  --t-bloco: 1.05rem;
+  --t-corpo: 0.95rem;
+  --t-apoio: 0.82rem;
+  --t-rotulo: 0.68rem;
+  --tracking-rotulo: 0.13em;
+
+  /* ------------------------------------------------------------ densidade */
+  --alvo-toque: 2.75rem;
+  --linha-padding-y: var(--e3);
+  --linha-padding-x: var(--e4);
+
+  /* ------------------------------------------------------------ movimento */
+  --duracao-1: 120ms;
+  --duracao-2: 200ms;
+  --curva: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* ==========================================================================
+   CAMADA 2 — SEMÂNTICAS (claro)
+   Valores próprios, não uma inversão: o ciano precisa escurecer para funcionar
+   sobre branco, e a translucidez do vidro vira superfície sólida — sobre branco
+   ela viraria cinza sujo.
+   ========================================================================== */
+@media (prefers-color-scheme: light) {
+  :root:not([data-tema='escuro']) {
+    color-scheme: light;
+
+    --superficie-base: var(--azul-100);
+    --superficie-atmosfera: none;
+    --superficie-1: var(--azul-050);
+    --superficie-2: #e9eff6;
+    --superficie-3: #dde6f0;
+
+    --texto-forte: var(--tinta-900);
+    --texto-medio: var(--tinta-700);
+    --texto-fraco: var(--tinta-500);
+
+    --borda-sutil: #d7e0ea;
+    --borda-media: #bccbda;
+    --borda-forte: #8fa4b8;
+
+    --acao: var(--ciano-700);
+    --acao-sobre: var(--ciano-600);
+    --acao-texto: #ffffff;
+    --foco: var(--ciano-600);
+
+    --quente: var(--coral-600);
+    --bom: var(--verde-600);
+    --atencao: var(--ambar-600);
+    --critico: var(--rubi-600);
+    --critico-fundo: rgb(179 43 65 / 0.09);
+    --critico-texto: #ffffff;
+
+    --painel-fundo: var(--superficie-1);
+    --painel-desfoque: none;
+    --painel-luz: none;
+    --painel-sombra: 0 1px 2px rgb(12 27 39 / 0.06);
+    --painel-sombra-2: 0 6px 18px rgb(12 27 39 / 0.1);
+  }
+}
+
+:root[data-tema='claro'] {
+  color-scheme: light;
+
+  --superficie-base: var(--azul-100);
+  --superficie-atmosfera: none;
+  --superficie-1: var(--azul-050);
+  --superficie-2: #e9eff6;
+  --superficie-3: #dde6f0;
+
+  --texto-forte: var(--tinta-900);
+  --texto-medio: var(--tinta-700);
+  --texto-fraco: var(--tinta-500);
+
+  --borda-sutil: #d7e0ea;
+  --borda-media: #bccbda;
+  --borda-forte: #8fa4b8;
+
+  --acao: var(--ciano-700);
+  --acao-sobre: var(--ciano-600);
+  --acao-texto: #ffffff;
+  --foco: var(--ciano-600);
+
+  --quente: var(--coral-600);
+  --bom: var(--verde-600);
+  --atencao: var(--ambar-600);
+  --critico: var(--rubi-600);
+  --critico-fundo: rgb(179 43 65 / 0.09);
+  --critico-texto: #ffffff;
+
+  --painel-fundo: var(--superficie-1);
+  --painel-desfoque: none;
+  --painel-luz: none;
+  --painel-sombra: 0 1px 2px rgb(12 27 39 / 0.06);
+  --painel-sombra-2: 0 6px 18px rgb(12 27 39 / 0.1);
+}
+
+/* ==========================================================================
+   DENSIDADE
+   O gestor precisa ver muito de uma vez; o consultor precisa de alvo grande.
+   A compacta encolhe o espaço, nunca o alvo de toque.
+   ========================================================================== */
+[data-densidade='compacta'] {
+  --linha-padding-y: var(--e1);
+  --linha-padding-x: var(--e3);
+  --t-valor: 1.5rem;
+}
+
+@media (pointer: coarse) {
+  [data-densidade='compacta'] {
+    --alvo-toque: 2.75rem;
+  }
+}

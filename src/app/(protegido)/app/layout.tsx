@@ -1,10 +1,7 @@
 import type { ReactNode } from 'react';
-import { MolduraArea } from '@/componentes/moldura-area';
-import { exigirAcesso } from '@/seguranca/sessao';
-import { modoDeDados } from '@/seguranca/modo-dados';
-import { sair } from '@/app/(publico)/entrar/acoes';
+import { Area } from '../area';
 
-// Menu do consultor, fixo (blueprint §5.4).
+// Menu do consultor, fixo (design system §01).
 const MENU = [
   { rotulo: 'Início', destino: '/app/inicio' },
   { rotulo: 'Clientes', destino: '/app/clientes' },
@@ -15,19 +12,10 @@ const MENU = [
   { rotulo: 'Carteira', destino: '/app/carteira' },
 ];
 
-export default async function Layout({ children }: { children: ReactNode }) {
-  // A autorização real acontece aqui, não no middleware.
-  const sessao = await exigirAcesso('/app');
-
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <MolduraArea
-      modo={modoDeDados()}
-      acaoSair={sair}
-      titulo="Venitus.on"
-      nome={sessao.email}
-      menu={MENU}
-    >
+    <Area area="/app" titulo="Venitus.on" menu={MENU}>
       {children}
-    </MolduraArea>
+    </Area>
   );
 }

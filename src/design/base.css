@@ -1,0 +1,546 @@
+/**
+ * Base e componentes do design system.
+ *
+ * Nenhum valor hexadecimal aqui, e nenhum espaçamento fora da escala. Se algo
+ * precisar de um valor novo, ele nasce em `tokens.css` — senão o sistema vira
+ * sugestão em vez de regra.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--superficie-base);
+  background-image: var(--superficie-atmosfera);
+  background-attachment: fixed;
+  color: var(--texto-medio);
+  font-family: var(--fonte-ui);
+  font-size: var(--t-corpo);
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--texto-forte);
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  /* Evita a órfã de uma palavra sozinha na segunda linha. */
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--t-titulo);
+}
+h2 {
+  font-size: var(--t-bloco);
+}
+
+p {
+  margin: 0;
+  max-width: 68ch;
+}
+
+:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+  border-radius: var(--raio-1);
+}
+
+.apoio {
+  color: var(--texto-fraco);
+  font-size: var(--t-apoio);
+}
+
+.rotulo {
+  font-size: var(--t-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tracking-rotulo);
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+.num {
+  font-family: var(--fonte-num);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   PAINEL — os três níveis de elevação, e só três
+   ========================================================================== */
+.painel {
+  background: var(--painel-fundo);
+  backdrop-filter: var(--painel-desfoque);
+  border: 1px solid var(--borda-sutil);
+  border-radius: var(--raio-3);
+  box-shadow: var(--painel-luz), var(--painel-sombra);
+}
+
+.painel--destaque {
+  background: var(--superficie-2);
+  border-color: var(--borda-media);
+  box-shadow: var(--painel-luz), var(--painel-sombra-2);
+}
+
+/* ==========================================================================
+   BOTÃO
+   ========================================================================== */
+.botao {
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.88rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e2);
+  min-height: var(--alvo-toque);
+  padding: 0 var(--e4);
+  border-radius: var(--raio-2);
+  border: 1px solid transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  position: relative;
+  /* Nunca `all`: ele pega propriedades que não se pretendia animar. */
+  transition:
+    background-color var(--duracao-1) var(--curva),
+    border-color var(--duracao-1) var(--curva),
+    transform var(--duracao-1) var(--curva);
+}
+
+.botao:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.botao:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.botao--largo {
+  width: 100%;
+}
+
+.botao--primario {
+  background: var(--acao);
+  color: var(--acao-texto);
+}
+
+.botao--primario:hover:not(:disabled) {
+  background: var(--acao-sobre);
+}
+
+.botao--secundario {
+  background: var(--superficie-2);
+  color: var(--texto-forte);
+  border-color: var(--borda-media);
+}
+
+.botao--secundario:hover:not(:disabled) {
+  background: var(--superficie-3);
+  border-color: var(--borda-forte);
+}
+
+.botao--discreto {
+  background: transparent;
+  color: var(--texto-medio);
+}
+
+.botao--discreto:hover:not(:disabled) {
+  background: var(--superficie-2);
+  color: var(--texto-forte);
+}
+
+.botao--perigo {
+  background: var(--critico-fundo);
+  color: var(--critico);
+  border-color: var(--critico);
+}
+
+.botao--perigo:hover:not(:disabled) {
+  background: var(--critico);
+  color: var(--critico-texto);
+}
+
+/* O rótulo some, mas a caixa mantém o tamanho — a tela não pula. */
+.botao[data-estado='enviando'] {
+  color: transparent;
+  pointer-events: none;
+}
+
+.botao[data-estado='enviando']::after {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: var(--acao-texto);
+  border-radius: 50%;
+  animation: girar 700ms linear infinite;
+}
+
+.botao--primario[data-estado='enviando']::after {
+  border-color: rgb(0 0 0 / 0.25);
+  border-top-color: var(--acao-texto);
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   CAMPO
+   ========================================================================== */
+.campo {
+  display: grid;
+  gap: var(--e1);
+}
+
+.campo > .campo-rotulo {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--texto-medio);
+}
+
+.campo input {
+  font: inherit;
+  /* 16px evita o zoom automático do iOS ao focar o campo. */
+  font-size: 1rem;
+  color: var(--texto-forte);
+  background: var(--superficie-2);
+  border: 1px solid var(--borda-media);
+  border-radius: var(--raio-2);
+  padding: var(--e3);
+  min-height: var(--alvo-toque);
+  width: 100%;
+}
+
+.campo input::placeholder {
+  color: var(--texto-fraco);
+}
+
+.campo input:hover {
+  border-color: var(--borda-forte);
+}
+
+.campo[data-estado='erro'] input {
+  border-color: var(--critico);
+}
+
+.campo-dica {
+  font-size: 0.76rem;
+  color: var(--texto-fraco);
+}
+
+.campo-erro {
+  font-size: 0.76rem;
+  color: var(--critico);
+}
+
+/* ==========================================================================
+   ESTADO — marcador de forma, sem pílula
+   A forma carrega o significado junto com a cor; quem não distingue matiz lê
+   o marcador e o texto.
+   ========================================================================== */
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  font-size: var(--t-apoio);
+  color: var(--texto-forte);
+  white-space: nowrap;
+}
+
+.estado::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  background: currentColor;
+}
+
+.estado[data-tom='bom'] {
+  color: var(--bom);
+}
+
+.estado[data-tom='bom']::before {
+  border-radius: 50%;
+}
+
+.estado[data-tom='atencao'] {
+  color: var(--atencao);
+}
+
+.estado[data-tom='atencao']::before {
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.estado[data-tom='critico'] {
+  color: var(--critico);
+}
+
+.estado[data-tom='critico']::before {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.estado[data-tom='neutro'] {
+  color: var(--texto-fraco);
+}
+
+.estado[data-tom='neutro']::before {
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+.estado-texto {
+  color: var(--texto-forte);
+}
+
+/* ==========================================================================
+   PLACA DE INDICADOR
+   ========================================================================== */
+.placa {
+  background: var(--painel-fundo);
+  border: 1px solid var(--borda-sutil);
+  border-radius: var(--raio-2);
+  padding: var(--linha-padding-y) var(--linha-padding-x);
+  display: grid;
+  gap: var(--e1);
+  min-width: 0;
+}
+
+.placa-valor {
+  font-family: var(--fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-valor);
+  line-height: 1;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.placa[data-tom='quente'] .placa-valor {
+  color: var(--quente);
+}
+.placa[data-tom='atencao'] .placa-valor {
+  color: var(--atencao);
+}
+.placa[data-tom='bom'] .placa-valor {
+  color: var(--bom);
+}
+
+.placa-descricao {
+  font-size: 0.78rem;
+  color: var(--texto-fraco);
+  line-height: 1.35;
+}
+
+/* ==========================================================================
+   AVISO
+   ========================================================================== */
+.aviso {
+  display: grid;
+  gap: var(--e1);
+  padding: var(--e3) var(--e4);
+  border-radius: var(--raio-2);
+  border: 1px solid var(--borda-media);
+  background: var(--superficie-2);
+  font-size: var(--t-apoio);
+}
+
+.aviso[data-tom='critico'] {
+  border-color: var(--critico);
+  background: var(--critico-fundo);
+}
+
+.aviso-titulo {
+  color: var(--texto-forte);
+  font-weight: 650;
+}
+
+/* ==========================================================================
+   FAIXA DE MODO DE DADOS
+   Nunca discreta: ela existe para impedir que alguém trate registro real como
+   descartável.
+   ========================================================================== */
+.faixa-modo {
+  text-align: center;
+  font-size: var(--t-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tracking-rotulo);
+  text-transform: uppercase;
+  padding: var(--e1) var(--e3);
+}
+
+.faixa-modo[data-modo='sintetico'] {
+  background: var(--superficie-2);
+  color: var(--bom);
+  border-bottom: 1px solid var(--bom);
+}
+
+.faixa-modo[data-modo='espelho'] {
+  background: var(--superficie-2);
+  color: var(--atencao);
+  border-bottom: 1px solid var(--atencao);
+}
+
+.faixa-modo[data-modo='producao-leitura'] {
+  background: var(--critico);
+  color: var(--critico-texto);
+}
+
+.faixa-modo[data-modo='producao'] {
+  background: var(--superficie-3);
+  color: var(--texto-medio);
+}
+
+/* ==========================================================================
+   LAYOUT DE TELA
+   ========================================================================== */
+.centralizado {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--e4);
+  padding-bottom: max(var(--e4), env(safe-area-inset-bottom));
+}
+
+.cartao {
+  width: 100%;
+  max-width: 24rem;
+  background: var(--painel-fundo);
+  backdrop-filter: var(--painel-desfoque);
+  border: 1px solid var(--borda-sutil);
+  border-radius: var(--raio-3);
+  box-shadow: var(--painel-luz), var(--painel-sombra);
+  padding: var(--e5);
+  display: grid;
+  gap: var(--e3);
+}
+
+.formulario {
+  display: grid;
+  gap: var(--e3);
+  margin-top: var(--e2);
+}
+
+.area {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e3) var(--e4);
+  align-items: center;
+  padding: var(--e3) var(--e4);
+  background: var(--painel-fundo);
+  backdrop-filter: var(--painel-desfoque);
+  border-bottom: 1px solid var(--borda-sutil);
+}
+
+.cabecalho nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2);
+  flex: 1;
+  min-width: 0;
+}
+
+.cabecalho nav a {
+  color: var(--texto-fraco);
+  text-decoration: none;
+  font-size: var(--t-apoio);
+  padding: var(--e1) var(--e2);
+  border-radius: var(--raio-1);
+}
+
+.cabecalho nav a:hover {
+  color: var(--acao);
+  background: var(--superficie-2);
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  font-size: var(--t-apoio);
+  color: var(--texto-fraco);
+  min-width: 0;
+}
+
+.usuario > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ligacao {
+  font: inherit;
+  font-size: var(--t-apoio);
+  background: none;
+  border: 0;
+  padding: var(--e1) var(--e2);
+  color: var(--acao);
+  cursor: pointer;
+  text-decoration: underline;
+  touch-action: manipulation;
+}
+
+.conteudo {
+  padding: var(--e5) var(--e4);
+  padding-bottom: max(var(--e5), env(safe-area-inset-bottom));
+  max-width: 62rem;
+  width: 100%;
+  display: grid;
+  gap: var(--e4);
+  align-content: start;
+}
+
+.grade-placas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--e2);
+}
+
+.qr {
+  display: grid;
+  place-items: center;
+  padding: var(--e3);
+  background: #ffffff;
+  border-radius: var(--raio-2);
+}
+
+.qr svg {
+  width: 100%;
+  max-width: 12rem;
+  height: auto;
+}
+
+.codigo-manual {
+  font-family: var(--fonte-num);
+  word-break: break-all;
+  user-select: all;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -15,6 +15,7 @@ function montar(modo: Parameters<typeof MolduraArea>[0]['modo'] = 'sintetico') {
       nome="consultor@alfa.local"
       modo={modo}
       menu={MENU}
+      seletorTema={<button type="button">Claro</button>}
       acaoSair={vi.fn()}
     >
       <p>conteúdo</p>
@@ -43,7 +44,7 @@ describe('MolduraArea', () => {
     montar('espelho');
     const faixa = screen.getByRole('status');
     expect(faixa.textContent).toContain('anonimizados');
-    expect(faixa.className).toContain('faixa-modo--espelho');
+    expect(faixa.getAttribute('data-modo')).toBe('espelho');
   });
 
   it('deixa o modo de leitura de produção evidente', () => {
@@ -54,5 +55,26 @@ describe('MolduraArea', () => {
   it('oferece a saída como botão de formulário', () => {
     montar();
     expect(screen.getByRole('button', { name: 'Sair' })).toBeDefined();
+  });
+
+  it('reserva o lugar do seletor de tema sem conhecê-lo', () => {
+    montar();
+    expect(screen.getByRole('button', { name: 'Claro' })).toBeDefined();
+  });
+
+  it('aplica a densidade compacta quando pedida', () => {
+    const { container } = render(
+      <MolduraArea
+        titulo="Venitus.on"
+        nome="gestor@alfa.local"
+        modo="sintetico"
+        menu={MENU}
+        densidade="compacta"
+        acaoSair={vi.fn()}
+      >
+        <p>conteúdo</p>
+      </MolduraArea>,
+    );
+    expect(container.querySelector('[data-densidade="compacta"]')).not.toBeNull();
   });
 });
