@@ -6,6 +6,7 @@ import {
   areaDe,
   decidirRota,
   ehPapel,
+  ehRotaDeSessao,
   ehRotaProtegida,
   ehRotaPublica,
   podeAcessar,
@@ -64,6 +65,29 @@ describe('classificação de rota', () => {
     // `/aplicativo` não pode cair na área `/app`.
     expect(ehRotaProtegida('/aplicativo')).toBe(false);
     expect(podeAcessar('CONSULTOR', '/aplicativo')).toBe(false);
+  });
+});
+
+describe('rotas de sessão', () => {
+  it.each([['/mfa'], ['/mfa/cadastrar'], ['/mfa/verificar']])('%s exige sessão', (caminho) => {
+    expect(ehRotaDeSessao(caminho)).toBe(true);
+  });
+
+  it('prefixo parecido não conta', () => {
+    expect(ehRotaDeSessao('/mfazenda')).toBe(false);
+    expect(ehRotaDeSessao('/app/inicio')).toBe(false);
+  });
+
+  it('sem papel, vai para o login', () => {
+    expect(decidirRota(null, '/mfa/cadastrar')).toEqual({
+      tipo: 'redirecionar',
+      destino: ROTA_LOGIN,
+    });
+  });
+
+  it.each(PAPEIS)('%s alcança a tela de segundo fator', (papel) => {
+    // Ela vale para qualquer papel: é onde a sessão ainda está incompleta.
+    expect(decidirRota(papel, '/mfa/verificar')).toEqual({ tipo: 'seguir' });
   });
 });
 

@@ -1,26 +1,9 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import { USUARIOS, entrar } from './apoio';
 
-const SENHA = 'Venitus@Local123';
-
-const CONSULTOR = 'consultor@alfa.local';
-const GESTOR = 'gestor@alfa.local';
-const ADMIN = 'admin@venitus.local';
-
-async function entrar(pagina: Page, email: string, senha: string = SENHA): Promise<void> {
-  await pagina.goto('/entrar');
-  await pagina.getByLabel('E-mail').fill(email);
-  await pagina.getByLabel('Senha').fill(senha);
-
-  // Espera a resposta da Server Action, que é quando o cookie de sessão chega.
-  // `networkidle` não serve: em desenvolvimento o websocket do HMR nunca deixa
-  // a rede ociosa, e a espera estoura o tempo.
-  const resposta = pagina.waitForResponse(
-    (r) => r.request().method() === 'POST' && r.url().includes('/entrar'),
-  );
-  await pagina.getByRole('button', { name: 'Entrar' }).click();
-  await resposta;
-}
+const CONSULTOR = USUARIOS.consultorAlfa;
+const GESTOR = USUARIOS.gestorAlfa;
+const ADMIN = USUARIOS.admin;
 
 test.describe('login', () => {
   test('o consultor entra e cai na própria área', async ({ page }) => {

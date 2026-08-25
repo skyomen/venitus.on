@@ -119,6 +119,24 @@ describe('tabelas de domínio', () => {
   );
 });
 
+describe('policies de escrita', () => {
+  it('toda policy de escrita valida a linha gravada com WITH CHECK', async () => {
+    // O `using` filtra o que se enxerga; só o `with check` impede gravar em outro
+    // tenant. Uma policy de escrita sem ele deixa a porta de saída aberta (§6.2).
+    const semCheck = await consultar<{ tabela: string; policy: string }>(`
+      select c.relname as tabela, p.polname as policy
+      from pg_policy p
+      join pg_class c on c.oid = p.polrelid
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public'
+        and p.polcmd in ('a', 'w', '*')   -- insert, update, all
+        and p.polpermissive
+        and p.polwithcheck is null
+    `);
+    expect(semCheck).toEqual([]);
+  });
+});
+
 describe('privilégios padrão', () => {
   it('o papel anon não alcança nenhuma tabela do schema public', async () => {
     const alcancaveis = await consultar<{ nome: string }>(`

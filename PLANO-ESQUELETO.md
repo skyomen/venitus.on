@@ -88,8 +88,9 @@ quebra o pipeline.
 **Aceite:** os três usuários entram e cada um só alcança a própria área; `service_role` e chave de banco
 ausentes do bundle.
 
-> MFA: o cadastro fica implementado nesta fatia, mas a **obrigatoriedade** para `PLATFORM_ADMIN` e
-> `GESTOR` só é ligada no ambiente de produção — senão trava o desenvolvimento local a cada login.
+> MFA: entregue junto com a fatia 3, não com esta. O cadastro e a verificação estão implementados; a
+> **obrigatoriedade** para `PLATFORM_ADMIN` e `GESTOR` é ligada por `MFA_OBRIGATORIA`, com padrão ativo
+> apenas em produção — senão trava o desenvolvimento local a cada login.
 
 ---
 

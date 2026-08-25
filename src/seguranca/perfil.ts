@@ -1,5 +1,6 @@
 import { ehPapel } from './autorizacao';
 import type { Papel } from './autorizacao';
+import type { NivelGarantia } from './mfa';
 
 /** O que o servidor sabe sobre quem está pedindo. Nada além disto chega às telas. */
 export interface Perfil {
@@ -7,6 +8,8 @@ export interface Perfil {
   readonly email: string;
   readonly papel: Papel;
   readonly corretoraId: string | null;
+  /** `aal1` é senha; `aal2` é senha mais segundo fator. Vem do claim `aal`. */
+  readonly nivel: NivelGarantia;
 }
 
 /**
@@ -20,6 +23,7 @@ export interface Perfil {
 export interface ClaimsToken {
   readonly sub?: unknown;
   readonly email?: unknown;
+  readonly aal?: unknown;
   readonly app_metadata?: unknown;
 }
 
@@ -61,5 +65,8 @@ export function interpretarPerfil(claims: ClaimsToken | null | undefined): Perfi
     papel,
     // O PLATFORM_ADMIN legitimamente não tem corretora (D10).
     corretoraId: texto(metadados['corretora_id']),
+    // Nível desconhecido conta como o mais baixo: presumir `aal2` dispensaria
+    // o segundo fator justamente quando não se sabe se ele foi usado.
+    nivel: claims.aal === 'aal2' ? 'aal2' : 'aal1',
   };
 }

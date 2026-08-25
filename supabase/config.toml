@@ -298,10 +298,12 @@ auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
 # Control how many MFA factors can be enrolled at once per user.
 max_enrolled_factors = 10
 
-# Control MFA via App Authenticator (TOTP)
+# Segundo fator por aplicativo autenticador. Obrigatorio para PLATFORM_ADMIN e
+# GESTOR em producao (blueprint 4.4). Precisa estar habilitado aqui tambem, senao
+# a tela de cadastro sobe e o enroll falha.
 [auth.mfa.totp]
-enroll_enabled = false
-verify_enabled = false
+enroll_enabled = true
+verify_enabled = true
 
 # Configure MFA via Phone Messaging
 [auth.mfa.phone]

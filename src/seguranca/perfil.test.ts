@@ -9,6 +9,7 @@ describe('interpretarPerfil', () => {
       interpretarPerfil({
         sub: 'u1',
         email: 'consultor@alfa.local',
+        aal: 'aal1',
         app_metadata: { papel: 'CONSULTOR', corretora_id: CORRETORA },
       }),
     ).toEqual({
@@ -16,6 +17,7 @@ describe('interpretarPerfil', () => {
       email: 'consultor@alfa.local',
       papel: 'CONSULTOR',
       corretoraId: CORRETORA,
+      nivel: 'aal1',
     });
   });
 
@@ -25,6 +27,7 @@ describe('interpretarPerfil', () => {
       interpretarPerfil({
         sub: 'u2',
         email: 'admin@venitus.local',
+        aal: 'aal2',
         app_metadata: { papel: 'PLATFORM_ADMIN', corretora_id: null },
       }),
     ).toEqual({
@@ -32,6 +35,7 @@ describe('interpretarPerfil', () => {
       email: 'admin@venitus.local',
       papel: 'PLATFORM_ADMIN',
       corretoraId: null,
+      nivel: 'aal2',
     });
   });
 
@@ -64,6 +68,20 @@ describe('interpretarPerfil', () => {
   ])('recusa perfil %s, sem acesso parcial', (_caso, claims) => {
     expect(interpretarPerfil(claims)).toBeNull();
   });
+
+  it.each([['aal1'], [undefined], [''], ['desconhecido'], [2]])(
+    'trata o nível %s como aal1, o mais baixo',
+    (aal: unknown) => {
+      // Presumir aal2 dispensaria o segundo fator justamente quando não se sabe
+      // se ele foi usado.
+      const perfil = interpretarPerfil({
+        sub: 'u6',
+        aal,
+        app_metadata: { papel: 'GESTOR', corretora_id: CORRETORA },
+      });
+      expect(perfil?.nivel).toBe('aal1');
+    },
+  );
 
   it('trata e-mail ausente como vazio, sem derrubar a sessão', () => {
     const perfil = interpretarPerfil({ sub: 'u4', app_metadata: { papel: 'PLATFORM_ADMIN' } });

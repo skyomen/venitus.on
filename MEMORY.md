@@ -7,7 +7,7 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** fatia 2 concluída — login funcionando, três áreas isoladas, verificado por E2E em navegador.
+**Fase:** fatia 3 concluída — domínio, máquina de estados e segundo fator. Nenhuma pendência aberta das fatias anteriores.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -16,8 +16,8 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** fatia 3 — domínio e máquina de estados. MFA ficou pendente da fatia 2 e vira uma
-fatia curta própria. Ver [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).
+**Próximo marco:** fatia 4 — conectores stub e entrada de lead.
+Ver [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
 Identidade dos commits: `meyksonLeite <meyksonleite@gmail.com>`.
@@ -120,6 +120,11 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 | D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                                                                                                                            |
 | D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                                                                                                                           |
 | D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                                                                                                                                  |
+| D32 | 2026-08-25 | **A etapa só muda por `mover_oportunidade()`.** Um gatilho recusa qualquer `update` direto, com marca local à transação. Sem isso a máquina de estados seria convenção, não garantia.                                                                                                                  |
+| D33 | 2026-08-25 | Transições declaradas em tabela (`transicao_permitida`), não em código: assim são consultáveis e testáveis sem abrir uma função.                                                                                                                                                                       |
+| D34 | 2026-08-25 | Tabelas filhas herdam a visibilidade da oportunidade por `exists`, em vez de repetir a regra do consultor em cada policy. A regra vive num lugar só.                                                                                                                                                   |
+| D35 | 2026-08-25 | Conflito de identidade entre dois contatos **falha explicitamente** em vez de completar em silêncio: unir cadastros é decisão de negócio, e o chamador encaminha para quarentena.                                                                                                                      |
+| D36 | 2026-08-25 | MFA obrigatória por ambiente (`MFA_OBRIGATORIA`), com padrão ligado só em produção. Quem cadastra um fator precisa usá-lo, qualquer que seja o papel.                                                                                                                                                  |
 | D30 | 2026-08-25 | **O papel vem de `getClaims()`, nunca de `getUser()`.** O objeto de usuário carrega o `app_metadata` gravado na tabela do Auth, sem os claims do hook — ler dali derrubava todo login. `getClaims()` verifica a assinatura e devolve o que a RLS também enxerga, mantendo aplicação e banco de acordo. |
 | D31 | 2026-08-25 | Playwright entra já na fatia 2, antes do previsto: o login foi entregue quebrado por não existir verificação automática do caminho do usuário. O E2E passa a fazer parte do portão.                                                                                                                    |
 | D29 | 2026-08-25 | **`usuario_corretora` fundida em `usuario`.** A D9 (um usuário, uma corretora) tornou a tabela de vínculo redundante — ela existia para um N-para-N agora proibido. Uma tabela a menos, um join a menos em toda policy, e a regra passa a ser garantida por `check constraint` em vez de índice.       |
@@ -237,12 +242,13 @@ Supabase CLI entra como dependência de desenvolvimento.
 
 ## 8. Fatias entregues
 
-| Fatia                    | Estado | O que ficou de pé                                                                                                                                                                                                                                               |
-| ------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Repositório e portão | ✅     | Next 16 + React 19 + TS strict; portão único verde (cobertura 100%, 0 clones); ganchos de commit e push; CI no GitHub Actions; Supabase CLI subindo Postgres 17, Auth e Storage em containers; redator de PII como primeiro módulo.                             |
-| 1 — Tenant e RLS         | ✅     | Migration de tenant com 5 tabelas categorizadas; hook de access token injetando `corretora_id` e `papel`; RLS habilitado e forçado; recorte de coluna impedindo autopromoção; seed com 2 corretoras e 5 logins; 39 testes de integração contra o Postgres real. |
-| 2 — Login                | ✅     | Login server-side com cookie `HttpOnly`; três áreas isoladas com guard no layout; faixa de modo de dados; 14 testes de ponta a ponta em navegador; verificação de que nenhuma chave vai ao bundle.                                                              |
-| 3 a 8                    | —      |                                                                                                                                                                                                                                                                 |
+| Fatia                            | Estado | O que ficou de pé                                                                                                                                                                                                                                               |
+| -------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Repositório e portão         | ✅     | Next 16 + React 19 + TS strict; portão único verde (cobertura 100%, 0 clones); ganchos de commit e push; CI no GitHub Actions; Supabase CLI subindo Postgres 17, Auth e Storage em containers; redator de PII como primeiro módulo.                             |
+| 1 — Tenant e RLS                 | ✅     | Migration de tenant com 5 tabelas categorizadas; hook de access token injetando `corretora_id` e `papel`; RLS habilitado e forçado; recorte de coluna impedindo autopromoção; seed com 2 corretoras e 5 logins; 39 testes de integração contra o Postgres real. |
+| 2 — Login                        | ✅     | Login server-side com cookie `HttpOnly`; três áreas isoladas com guard no layout; faixa de modo de dados; 14 testes de ponta a ponta em navegador; verificação de que nenhuma chave vai ao bundle.                                                              |
+| 3 — Domínio e máquina de estados | ✅     | 26 tabelas novas com RLS e categoria; transições declaradas em tabela; gatilho que recusa `update` direto em `etapa`; deduplicação de contato; segundo fator com cadastro e verificação. 198 testes de integração, 20 E2E.                                      |
+| 4 a 8                            | —      |                                                                                                                                                                                                                                                                 |
 
 O portão foi verificado nos dois sentidos, duas vezes:
 
@@ -267,6 +273,7 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
 | 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
+| 2026-08-25 | **Fatia 3 entregue, mais o MFA que faltava da fatia 2.** 31 tabelas no total, máquina de estados com caminho único, deduplicação de contato e segundo fator completo. Dois defeitos reais achados pelos testes. Fechadas D32–D36.                                                 |
 | 2026-08-25 | **Fatia 2 entregue.** Login corrigido (`getClaims` no lugar de `getUser`), Playwright no portão, 106 testes de unidade + 39 de integração + 14 E2E. Regra de entrega registrada no `AGENTS.md`. Fechadas D30–D31.                                                                 |
 | 2026-08-25 | **Fatia 1 entregue.** Tenant, RLS, hook de claims, seed com 5 logins e 39 testes de integração. CI passou a subir o Supabase para rodar isolamento. Fechada D29.                                                                                                                  |
 | 2026-08-25 | **Fatia 0 entregue e publicada** em `github.com/skyomen/venitus.on`. Portão verde, CI configurado, stack local em Docker. Fechadas D26–D28.                                                                                                                                       |

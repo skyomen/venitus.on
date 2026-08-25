@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { criarClienteServidor } from '@/dados/cliente-servidor';
 import { ROTA_LOGIN, ROTA_SEM_PERMISSAO, podeAcessar } from './autorizacao';
 import { interpretarPerfil } from './perfil';
+import { decidirMfa, mfaObrigatoria, papelExigeMfa, rotaDaExigencia } from './mfa';
 import type { Perfil } from './perfil';
 
 export type { Perfil } from './perfil';
@@ -33,6 +34,29 @@ export async function obterSessao(): Promise<Perfil | null> {
   return error !== null ? null : interpretarPerfil(data?.claims);
 }
 
+/**
+ * Só consulta os fatores quando pode mudar a decisão.
+ *
+ * A sessão já em `aal2` não precisa de consulta, e o consultor sem
+ * obrigatoriedade também não — assim a chamada extra ao Auth não vira custo
+ * fixo de toda página.
+ */
+async function exigenciaDeSegundoFator(perfil: Perfil): Promise<string | null> {
+  const obrigatoria = mfaObrigatoria(process.env.NODE_ENV, process.env['MFA_OBRIGATORIA']);
+
+  if (perfil.nivel === 'aal2' || (!obrigatoria && !papelExigeMfa(perfil.papel))) {
+    return null;
+  }
+
+  const supabase = await criarClienteServidor();
+  const fatores = await supabase.auth.mfa.listFactors();
+  const temFatorVerificado = fatores.data?.totp.some((f) => f.status === 'verified') ?? false;
+
+  return rotaDaExigencia(
+    decidirMfa({ papel: perfil.papel, obrigatoria, temFatorVerificado, nivel: perfil.nivel }),
+  );
+}
+
 /** Usada pelo layout de cada área. É aqui que a autorização acontece de verdade. */
 export async function exigirAcesso(area: string): Promise<Perfil> {
   const sessao = await obterSessao();
@@ -43,5 +67,11 @@ export async function exigirAcesso(area: string): Promise<Perfil> {
   if (!podeAcessar(sessao.papel, area)) {
     redirect(ROTA_SEM_PERMISSAO);
   }
+
+  const destinoMfa = await exigenciaDeSegundoFator(sessao);
+  if (destinoMfa !== null) {
+    redirect(destinoMfa);
+  }
+
   return sessao;
 }

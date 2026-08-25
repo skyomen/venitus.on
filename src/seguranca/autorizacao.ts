@@ -41,6 +41,13 @@ export function ehRotaPublica(caminho: string): boolean {
   return ROTAS_PUBLICAS.some((rota) => caminho === rota || caminho.startsWith(`${rota}/`));
 }
 
+const AREA_SESSAO = '/mfa';
+
+/** Rota que exige sessão sem pertencer à área de um papel. */
+export function ehRotaDeSessao(caminho: string): boolean {
+  return caminho === AREA_SESSAO || caminho.startsWith(`${AREA_SESSAO}/`);
+}
+
 /** Uma rota é protegida quando pertence à área de algum papel. */
 export function ehRotaProtegida(caminho: string): boolean {
   return Object.values(AREA_POR_PAPEL).some(
@@ -66,6 +73,12 @@ const SEGUIR: Decisao = { tipo: 'seguir' };
  * a existência dela.
  */
 export function decidirRota(papel: Papel | null, caminho: string): Decisao {
+  // As telas de segundo fator ficam fora das áreas: exigem sessão, mas não
+  // pertencem a papel nenhum — é justamente nelas que a sessão está incompleta.
+  if (ehRotaDeSessao(caminho)) {
+    return papel === null ? { tipo: 'redirecionar', destino: ROTA_LOGIN } : SEGUIR;
+  }
+
   if (ehRotaPublica(caminho)) {
     // Quem já entrou não fica preso na tela de login.
     return papel !== null && caminho === ROTA_LOGIN
