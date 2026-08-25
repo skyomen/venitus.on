@@ -7,7 +7,7 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** fatia 5 parcial — fila, distribuição e réguas de pé no banco e na lógica. Falta o laço do worker que as consome.
+**Fase:** fatia 5 quase concluída — falta apenas ligar o worker ao banco (os adaptadores) e o teste ponta a ponta da régua.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -16,9 +16,7 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** fechar a fatia 5 com o laço do worker (drenar `agendamento` e `integracao_outbox`,
-disparar pelo portão de envio, aplicar disjuntor e reexecução). A base já está pronta e testada.
-Ver [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).
+**Próximo marco:** ver a seção 10, "Retomada", logo abaixo.
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
 Identidade dos commits: `meyksonLeite <meyksonleite@gmail.com>`.
@@ -121,6 +119,9 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 | D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                                                                                                                            |
 | D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                                                                                                                           |
 | D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                                                                                                                                  |
+| D50 | 2026-08-25 | O worker fala com **portas**, nunca com o banco nem com conector concreto. É o que permite exercitar o laço inteiro — inclusive desfechos que levam dias — sem subir infraestrutura.                                                                                                                   |
+| D51 | 2026-08-25 | **Um item que estoura não derruba o lote.** A falha é registrada e o próximo segue; um fornecedor com problema não pode parar a operação inteira.                                                                                                                                                      |
+| D52 | 2026-08-25 | Bloqueio de envio tem três destinos distintos: **cancelar** (a régua perdeu o sentido), **reagendar** (é cedo demais) e **falhar** (configuração errada, que insistir não resolve).                                                                                                                    |
 | D45 | 2026-08-25 | **A espera na fila não tem teto.** É isso que faz o lead antigo alcançar o quente; um limite superior traria de volta o abandono que a regra existe para evitar.                                                                                                                                       |
 | D46 | 2026-08-25 | Capacidade zero do consultor significa **sem limite**, não fila parada — é o padrão de quem ainda não configurou.                                                                                                                                                                                      |
 | D47 | 2026-08-25 | Existe **um portão único de envio** com janela de 24 h, template aprovado, horário, consentimento e dono da conversa. Espalhar essas regras garantiria que um ponto de disparo esquecesse uma delas.                                                                                                   |
@@ -287,6 +288,7 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
 | 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
+| 2026-08-25 | **Fatia 5, segunda metade.** Conector de CRM com stub honesto, decisões do worker e laço de drenagem com isolamento de falha. 469 testes de unidade, 100% de cobertura. Fechadas D50–D52. Falta só a camada de adaptadores ao banco — ver seção 10.                               |
 | 2026-08-25 | **Fatia 5, primeira metade.** Prioridade da fila, distribuição com `SKIP LOCKED` e capacidade, três réguas com cadências reais, portão único de envio, disjuntor e reexecução, conector de WhatsApp com stub honesto. Fechadas D45–D49.                                           |
 | 2026-08-25 | **Fatia 4 entregue.** Validação de formato e dígito verificador, contrato de conector com stub validado por teste de contrato, cadeia de validação de §8.3, entrada de lead por canal com quarentena e webhook com assinatura. Fechadas D41–D44.                                  |
 | 2026-08-25 | **Design system Vidro Polar implementado.** Tokens em três camadas, tema claro e escuro em ciclo de três estados resolvido no servidor, seis componentes base com teste, densidade por área. Criado `design-system.md`. Fechadas D37–D40.                                         |
@@ -297,3 +299,66 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 | 2026-08-25 | Criado `PLANO-ESQUELETO.md`: nove fatias até o fluxo rodando com stubs. Repositório e credenciais de acesso definidos.                                                                                                                                                            |
 | 2026-08-25 | Segunda revisão antes do código: 7 lacunas fora do tenant (G1–G7), com destaque para renovação de apólice e arbitragem bot×consultor. Fechadas D17–D25.                                                                                                                           |
 | 2026-08-25 | Auditoria do modelo de tenant (seção 6): 4 falhas estruturais encontradas e fechadas, 5 lacunas de configuração por corretora preenchidas. Adicionados ao blueprint: qualidade (§20), Docker de homologação (§17), modos de dados (§18) e conector stub (§10.5). Fechadas D9–D16. |
+
+---
+
+## 10. Retomada — leia isto antes de continuar
+
+Escrito em 2026-08-25 para quem pegar o trabalho a seguir.
+
+### Antes de qualquer coisa
+
+1. Ler `AGENTS.md` e este arquivo por inteiro. As regras de spec do `AGENTS.md` não são sugestão:
+   portão verde conferido por código de saída, cobertura ≥98%, duplicação ≤2%, e nada de anunciar
+   conclusão sem exercitar o caminho que o usuário percorre.
+2. Ler `design-system.md` antes de mexer em qualquer tela.
+3. Subir o ambiente:
+
+```bash
+npm install
+npm run db:up      # exige Docker Desktop rodando
+npm run db:reset
+npm run portao     # tem de sair com código 0
+```
+
+**O Docker Desktop cai entre sessões nesta máquina.** Se `npm run db:up` falhar, abrir o Docker
+Desktop e esperar o daemon responder antes de tentar de novo. Sem ele, `test:db` e `test:e2e` não
+rodam — e sem eles não há portão verde, logo não há commit.
+
+### O que falta para fechar a fatia 5
+
+A lógica do worker está pronta e coberta em 100%: `src/worker/decisoes.ts` (o que fazer com cada
+item) e `src/worker/drenar.ts` (o laço). Falta **apenas a camada que liga isso ao banco**:
+
+1. `src/worker/supabase/repositorio.ts` — implementar `RepositorioDoWorker` de `src/worker/portas.ts`
+   usando `criarClienteAdmin()`. As funções SQL já existem: `reservar_agendamentos`,
+   `reservar_outbox`, `agendar_passo`, `registrar_resposta_do_cliente`, `mover_oportunidade`.
+2. `src/worker/supabase/mensageiro.ts` e `espelho.ts` — adaptar `criarWhatsappStub()` e
+   `criarCrmStub()` às portas `Mensageiro` e `Espelho`.
+3. `src/worker/executar.ts` — o tique: monta as dependências, chama `drenar`, registra o balanço.
+   Agendar por `pg_cron` ou cron da Vercel, a cada minuto.
+4. Acrescentar os adaptadores à lista de exclusão de cobertura em `vitest.config.mts`, com
+   justificativa escrita — eles são adaptadores, como `cliente-servidor.ts`, e quem os cobre é o
+   teste de integração.
+5. Teste de integração em `testes/jornada/` que percorra uma régua inteira contra o banco real:
+   agendar, drenar, avançar, e conferir que responder cancela o que sobrou.
+
+### Armadilhas já conhecidas
+
+- **Não mude `etapa` por `update`.** O gatilho recusa; use `mover_oportunidade()`. Isso vale
+  inclusive para limpeza de teste — já tropecei nisso.
+- **`revoke ... from public` corta o `service_role`**, que herda de `public`. Toda função nova que o
+  worker chame precisa de `grant execute ... to service_role` explícito.
+- **O PostgREST expande composto nulo** num objeto de campos nulos. Testar `data === null` dá sempre
+  falso; conferir um campo, como `data?.id`.
+- **Identificador sintético em teste precisa ser único por execução**, senão o teste encontra o dado
+  da rodada anterior. Ver a semente em `testes/jornada/duplicidade.test.ts`.
+- **O ESLint limita a 4 parâmetros.** Acima disso, objeto nomeado.
+
+### Depois da fatia 5
+
+Fatia 6 — as telas do fluxo, usando o design system já implementado. É quando `CartaoOportunidade` e
+o componente `Estado` (marcador geométrico, nunca cápsula colorida) saem do papel; a especificação
+dos dois está em `design-system.md`, seções 9 e 10.
+
+---

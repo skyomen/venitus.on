@@ -1,6 +1,8 @@
 # AGENTS.md — Venitus.on
 
 **No início de toda sessão, leia este arquivo e [`MEMORY.md`](MEMORY.md).**
+Retomando o trabalho de outra sessão, comece pela seção 10 do `MEMORY.md` — ela diz o que falta, como
+subir o ambiente e quais armadilhas já custaram tempo.
 Este arquivo é a regra durável. `MEMORY.md` é o estado mutável (decisões, pendências, log).
 
 ---
