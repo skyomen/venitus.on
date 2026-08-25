@@ -7,7 +7,7 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** arquitetura definida, nenhum código escrito ainda.
+**Fase:** fatia 0 concluída — repositório no ar, portão de qualidade verde, stack local em Docker.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -16,8 +16,8 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** executar [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md) — nove fatias, da fatia 0
-(repositório e portão) à fatia 8 (renovação e carteira). Depois da fatia 2 o painel já é acessível.
+**Próximo marco:** fatia 1 — migration de tenant, RLS e o teste de isolamento gerado do catálogo.
+Ver [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
 Identidade dos commits: `meyksonLeite <meyksonleite@gmail.com>`.
@@ -120,6 +120,9 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 | D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                 |
 | D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                |
 | D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                       |
+| D26 | 2026-08-25 | **ESLint fica na linha 9.** O `typescript-eslint` que acompanha o Next ainda não suporta a 10 — ela falha com `scopeManager.addGlobals is not a function`. Revisar quando o Next atualizar. |
+| D27 | 2026-08-25 | Marcadores pendentes verificados por script sensível a maiúsculas, não pelo ESLint: a regra `no-warning-comments` é insensível a caixa e marcaria a palavra portuguesa "todo".              |
+| D28 | 2026-08-25 | O fluxograma `Atendimento Leads Total.pdf` fica **fora do Git** — contém nome e CPF reais de um cliente. Permanece na máquina como documento de referência.                                 |
 | D25 | 2026-08-25 | Denominador da cobertura definido, com pirâmide: RLS testado contra Postgres real; E2E no portão, fora do cálculo.                                                                          |
 
 ---
@@ -229,12 +232,28 @@ Supabase CLI entra como dependência de desenvolvimento.
 
 ---
 
-## 8. Log de sessões
+## 8. Fatias entregues
+
+| Fatia                    | Estado | O que ficou de pé                                                                                                                                                                                                                   |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Repositório e portão | ✅     | Next 16 + React 19 + TS strict; portão único verde (cobertura 100%, 0 clones); ganchos de commit e push; CI no GitHub Actions; Supabase CLI subindo Postgres 17, Auth e Storage em containers; redator de PII como primeiro módulo. |
+| 1 — Tenant e RLS         | —      | Próxima                                                                                                                                                                                                                             |
+| 2 — Login                | —      |                                                                                                                                                                                                                                     |
+| 3 a 8                    | —      |                                                                                                                                                                                                                                     |
+
+O portão foi verificado nos dois sentidos: um módulo sem teste derruba a cobertura e retorna código 1;
+removido, volta a 0. Escrever o redator com teste já pegou um defeito real — a regra de telefone consumia
+o meio de um CPF, porque a fronteira de palavra trata a transição dígito/pontuação como fronteira.
+
+---
+
+## 9. Log de sessões
 
 | Data       | O que aconteceu                                                                                                                                                                                                                                                                   |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
 | 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
+| 2026-08-25 | **Fatia 0 entregue e publicada** em `github.com/skyomen/venitus.on`. Portão verde, CI configurado, stack local em Docker. Fechadas D26–D28.                                                                                                                                       |
 | 2026-08-25 | Criado `PLANO-ESQUELETO.md`: nove fatias até o fluxo rodando com stubs. Repositório e credenciais de acesso definidos.                                                                                                                                                            |
 | 2026-08-25 | Segunda revisão antes do código: 7 lacunas fora do tenant (G1–G7), com destaque para renovação de apólice e arbitragem bot×consultor. Fechadas D17–D25.                                                                                                                           |
 | 2026-08-25 | Auditoria do modelo de tenant (seção 6): 4 falhas estruturais encontradas e fechadas, 5 lacunas de configuração por corretora preenchidas. Adicionados ao blueprint: qualidade (§20), Docker de homologação (§17), modos de dados (§18) e conector stub (§10.5). Fechadas D9–D16. |
