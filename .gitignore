@@ -1,0 +1,50 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Ambiente — nunca commitar segredo
+.env
+.env.local
+.env.*.local
+.env.homologacao
+.env.producao
+
+# Testes e qualidade
+coverage/
+.jscpd/
+report/
+playwright-report/
+test-results/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+
+# Dados — nada de produção entra no repositório
+*.dump
+*.sql.gz
+snapshots/
+espelho/
+
+# Documentos com dado pessoal real.
+# O fluxograma de referência contém nome e CPF de um cliente real (AGENTS.md, invariante 10).
+# Ele fica na máquina, fora do controle de versão.
+Atendimento Leads Total.pdf
+
+# Sistema operacional e editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json

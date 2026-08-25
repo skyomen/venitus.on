@@ -1,0 +1,7 @@
+# Normaliza fim de linha: LF no repositório, independente do sistema de quem clona.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary

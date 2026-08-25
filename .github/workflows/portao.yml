@@ -1,0 +1,31 @@
+name: portao
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: portao-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portao:
+    name: Portao de qualidade
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Portao (formatacao, lint, tipos, marcadores, cobertura, duplicacao, build)
+        run: npm run portao
+
+      - name: Nenhum segredo em variavel publica
+        run: node scripts/verificar-variaveis-publicas.mjs

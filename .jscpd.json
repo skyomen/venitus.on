@@ -1,0 +1,18 @@
+{
+  "threshold": 2,
+  "reporters": ["console", "json"],
+  "output": "report",
+  "minTokens": 50,
+  "absolute": true,
+  "gitignore": true,
+  "pattern": "**/*.{ts,tsx}",
+  "ignore": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/coverage/**",
+    "**/report/**",
+    "**/supabase/migrations/**",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
+}

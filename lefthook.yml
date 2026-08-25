@@ -1,0 +1,15 @@
+# Ganchos do portão de qualidade. Blueprint, seção 20.3.
+pre-commit:
+  parallel: true
+  commands:
+    formatacao:
+      glob: '*.{ts,tsx,js,mjs,json,md,yml}'
+      run: npx prettier --write {staged_files} && git add {staged_files}
+    lint:
+      glob: '*.{ts,tsx}'
+      run: npx eslint --fix {staged_files} && git add {staged_files}
+
+pre-push:
+  commands:
+    portao:
+      run: npm run portao
