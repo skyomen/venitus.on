@@ -32,10 +32,12 @@ export default defineConfig({
         // é o layout de cada área e a RLS.
         'src/proxy.ts',
 
-        // Adaptador de infraestrutura: liga o Supabase ao cookie do Next e não
-        // decide nada. A fronteira que ele protege é verificada por
-        // `npm run bundle` e pelos testes de isolamento contra o Postgres real.
+        // Adaptadores de infraestrutura: ligam o Supabase ao cookie do Next e ao
+        // ambiente, e não decidem nada. A fronteira que eles protegem é
+        // verificada por `npm run bundle`, pelos testes de isolamento contra o
+        // Postgres real e pelo E2E do webhook.
         'src/dados/cliente-servidor.ts',
+        'src/dados/cliente-admin.ts',
 
         // Chamada ao Auth mais redirecionamento. Toda a decisão está em
         // `perfil.ts` e `autorizacao.ts`.

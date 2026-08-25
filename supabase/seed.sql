@@ -104,3 +104,27 @@ begin
   end loop;
 end;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Canais de captação
+--
+-- É o canal que resolve o tenant do lead (blueprint §6.8). A chave é única na
+-- plataforma inteira: duas corretoras com a mesma chave dariam dois donos
+-- possíveis ao mesmo lead.
+-- ---------------------------------------------------------------------------
+insert into public.canal_captacao (corretora_id, tipo, chave_identificacao, origem, produto_id)
+values
+  (
+    '00000000-0000-4000-8000-00000000000a',
+    'LANDING_PAGE',
+    'lp-alfa',
+    'LANDING_PAGE',
+    '00000000-0000-4000-8000-000000000201'
+  ),
+  (
+    '00000000-0000-4000-8000-00000000000b',
+    'LANDING_PAGE',
+    'lp-beta',
+    'LANDING_PAGE',
+    '00000000-0000-4000-8000-000000000201'
+  );
