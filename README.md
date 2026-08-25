@@ -37,6 +37,7 @@ valores do `.env`.
 | `npm run portao`            | **O portão de qualidade.** Formatação, lint, tipos, marcadores, cobertura, duplicação e build |
 | `npm test`                  | Testes                                                                                        |
 | `npm run test:cov`          | Testes com cobertura                                                                          |
+| `npm run test:db`           | Isolamento entre corretoras, contra o Postgres real                                           |
 | `npm run db:up` / `db:down` | Sobe e derruba a stack local em Docker                                                        |
 | `npm run db:reset`          | Recria o banco: migrations + seed                                                             |
 | `npm run db:status`         | Chaves e portas do ambiente local                                                             |
@@ -85,7 +86,24 @@ token, nunca do corpo da requisição.
 
 ---
 
+## Acessos locais
+
+Criados pelo seed, só em local e homologação. Senha de todos: `Venitus@Local123`
+
+| E-mail                 | Papel            | Corretora |
+| ---------------------- | ---------------- | --------- |
+| `admin@venitus.local`  | `PLATFORM_ADMIN` | —         |
+| `gestor@alfa.local`    | `GESTOR`         | Alfa      |
+| `consultor@alfa.local` | `CONSULTOR`      | Alfa      |
+| `gestor@beta.local`    | `GESTOR`         | Beta      |
+| `consultor@beta.local` | `CONSULTOR`      | Beta      |
+
+As duas corretoras existem para que o teste de isolamento tenha um segundo tenant contra o qual provar que
+o vazamento não acontece.
+
+---
+
 ## Estado atual
 
-Fatia 0 concluída: repositório, portão de qualidade e CI. O login entra na fatia 2 — veja
-[`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).
+Fatias 0 e 1 concluídas: repositório, portão, CI, tenant e RLS com isolamento provado. A tela de login
+entra na fatia 2 — veja [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).

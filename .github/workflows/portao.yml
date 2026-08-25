@@ -10,22 +10,63 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  portao:
-    name: Portao de qualidade
+  rapido:
+    name: Portao rapido
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
       - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
 
-      - name: Instalar dependencias
-        run: npm ci
+      - run: npm ci
 
-      - name: Portao (formatacao, lint, tipos, marcadores, cobertura, duplicacao, build)
-        run: npm run portao
+      - name: Formatacao, lint, tipos e marcadores
+        run: |
+          npm run format:check
+          npm run lint
+          npm run typecheck
+          npm run marcadores
+
+      - name: Cobertura (>= 98% linhas e branches)
+        run: npm run test:cov
+
+      - name: Duplicacao (<= 2%)
+        run: npm run dup
+
+      - name: Build
+        run: npm run build
 
       - name: Nenhum segredo em variavel publica
         run: node scripts/verificar-variaveis-publicas.mjs
+
+  isolamento:
+    name: Isolamento entre corretoras
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Policy so e verificavel contra o Postgres de verdade (blueprint 20.6).
+      - name: Subir Supabase
+        run: npx supabase start
+
+      - name: Escrever .env a partir das chaves locais
+        run: |
+          npx supabase status -o env \
+            | sed 's/^API_URL=/SUPABASE_URL=/; s/^ANON_KEY=/SUPABASE_ANON_KEY=/; s/^SERVICE_ROLE_KEY=/SUPABASE_SERVICE_ROLE_KEY=/; s/^DB_URL=/SUPABASE_DB_URL=/' \
+            | tr -d '"' > .env
+          echo "MODO_DADOS=sintetico" >> .env
+
+      - name: Testes de isolamento e catalogo
+        run: npm run test:db
+
+      - name: Diagnostico em caso de falha
+        if: failure()
+        run: npx supabase status

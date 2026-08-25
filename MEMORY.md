@@ -7,7 +7,7 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** fatia 0 concluída — repositório no ar, portão de qualidade verde, stack local em Docker.
+**Fase:** fatia 1 concluída — tenant, RLS e isolamento provado contra o Postgres real.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -16,7 +16,7 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** fatia 1 — migration de tenant, RLS e o teste de isolamento gerado do catálogo.
+**Próximo marco:** fatia 2 — login server-side com cookie `HttpOnly` e as três áreas de rota.
 Ver [`PLANO-ESQUELETO.md`](PLANO-ESQUELETO.md).
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
@@ -94,36 +94,37 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 
 ## 3. Decisões tomadas
 
-| #   | Data       | Decisão                                                                                                                                                                                     |
-| --- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | 2026-08-25 | `AGENTS.md` e `MEMORY.md` são leitura obrigatória no início de cada sessão.                                                                                                                 |
-| D2  | 2026-08-25 | Multi-tenant é requisito de fase 1: `corretora_id` em toda tabela de domínio, desde a primeira migration.                                                                                   |
-| D3  | 2026-08-25 | Stack canônica: **Next.js (App Router) + Supabase + Vercel**. Fecha a decisão A1.                                                                                                           |
-| D4  | 2026-08-25 | **O navegador não recebe credencial de banco.** Sem cliente Supabase no browser, sem `NEXT_PUBLIC_SUPABASE_*`, sessão em cookie `HttpOnly`. RLS permanece obrigatório como segunda muralha. |
-| D5  | 2026-08-25 | O estado da jornada é da plataforma; o CRM externo é espelho, sincronizado por outbox.                                                                                                      |
-| D6  | 2026-08-25 | Realtime desligado no v1 — ele exigiria token de banco no navegador. Atualização por revalidação no servidor e SSE.                                                                         |
-| D7  | 2026-08-25 | Três papéis com rotas isoladas: `PLATFORM_ADMIN` (`/admin`), `GESTOR` (`/gestor`), `CONSULTOR` (`/app`).                                                                                    |
-| D8  | 2026-08-25 | Follow-up em tabela `agendamento` drenada por worker com `SKIP LOCKED`, não em `setTimeout`.                                                                                                |
-| D9  | 2026-08-25 | **Um usuário ativo pertence a exatamente uma corretora**, garantido por índice único. Atender duas corretoras exige duas contas.                                                            |
-| D10 | 2026-08-25 | **Nenhuma policy de tabela de domínio menciona `PLATFORM_ADMIN`.** Ele opera sobre agregados sem PII; ver dado de cliente exige acesso assistido autorizado pelo gestor da corretora.       |
-| D11 | 2026-08-25 | Três categorias de tabela — domínio, catálogo da plataforma, plataforma restrita — declaradas em toda migration.                                                                            |
-| D12 | 2026-08-25 | Tenant do lead resolvido por `canal_captacao`, nunca por campo do corpo. Canal desconhecido vai para quarentena, sem tenant padrão.                                                         |
-| D13 | 2026-08-25 | **Portão de qualidade:** cobertura ≥98% (linhas e branches), duplicação ≤2%, worktree sempre verde. Condição de merge, não meta.                                                            |
-| D14 | 2026-08-25 | Homologação em Docker Compose, isolada, com volume sintético realista.                                                                                                                      |
-| D15 | 2026-08-25 | Quatro modos de dados. Ver produção localmente é por **snapshot anonimizado** (`espelho`); dado real só em `producao-leitura`, réplica somente leitura com sessão auditada de 60 min.       |
-| D16 | 2026-08-25 | Todo conector nasce com stub que cumpre o contrato e permite reprocessar quando a API real chegar.                                                                                          |
-| D17 | 2026-08-25 | **Renovação é mecanismo, não pós-venda genérico:** a emissão agenda D-60, que abre oportunidade nova no mesmo contato. Sem isso o produto vende uma vez só.                                 |
-| D18 | 2026-08-25 | Carteira existente entra por importação validada, idempotente e reversível por lote, já agendando renovações.                                                                               |
-| D19 | 2026-08-25 | **A conversa tem um dono.** Atribuição silencia a automação; devolver à régua é ação explícita do consultor.                                                                                |
-| D20 | 2026-08-25 | Janela de 24 h do WhatsApp imposta num único portão de envio; template sem aprovação registrada não dispara.                                                                                |
-| D21 | 2026-08-25 | E-mail é família de conector, não detalhe: é o caminho alternativo quando o telefone não é válido.                                                                                          |
-| D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                 |
-| D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                |
-| D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                       |
-| D26 | 2026-08-25 | **ESLint fica na linha 9.** O `typescript-eslint` que acompanha o Next ainda não suporta a 10 — ela falha com `scopeManager.addGlobals is not a function`. Revisar quando o Next atualizar. |
-| D27 | 2026-08-25 | Marcadores pendentes verificados por script sensível a maiúsculas, não pelo ESLint: a regra `no-warning-comments` é insensível a caixa e marcaria a palavra portuguesa "todo".              |
-| D28 | 2026-08-25 | O fluxograma `Atendimento Leads Total.pdf` fica **fora do Git** — contém nome e CPF reais de um cliente. Permanece na máquina como documento de referência.                                 |
-| D25 | 2026-08-25 | Denominador da cobertura definido, com pirâmide: RLS testado contra Postgres real; E2E no portão, fora do cálculo.                                                                          |
+| #   | Data       | Decisão                                                                                                                                                                                                                                                                                          |
+| --- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | 2026-08-25 | `AGENTS.md` e `MEMORY.md` são leitura obrigatória no início de cada sessão.                                                                                                                                                                                                                      |
+| D2  | 2026-08-25 | Multi-tenant é requisito de fase 1: `corretora_id` em toda tabela de domínio, desde a primeira migration.                                                                                                                                                                                        |
+| D3  | 2026-08-25 | Stack canônica: **Next.js (App Router) + Supabase + Vercel**. Fecha a decisão A1.                                                                                                                                                                                                                |
+| D4  | 2026-08-25 | **O navegador não recebe credencial de banco.** Sem cliente Supabase no browser, sem `NEXT_PUBLIC_SUPABASE_*`, sessão em cookie `HttpOnly`. RLS permanece obrigatório como segunda muralha.                                                                                                      |
+| D5  | 2026-08-25 | O estado da jornada é da plataforma; o CRM externo é espelho, sincronizado por outbox.                                                                                                                                                                                                           |
+| D6  | 2026-08-25 | Realtime desligado no v1 — ele exigiria token de banco no navegador. Atualização por revalidação no servidor e SSE.                                                                                                                                                                              |
+| D7  | 2026-08-25 | Três papéis com rotas isoladas: `PLATFORM_ADMIN` (`/admin`), `GESTOR` (`/gestor`), `CONSULTOR` (`/app`).                                                                                                                                                                                         |
+| D8  | 2026-08-25 | Follow-up em tabela `agendamento` drenada por worker com `SKIP LOCKED`, não em `setTimeout`.                                                                                                                                                                                                     |
+| D9  | 2026-08-25 | **Um usuário ativo pertence a exatamente uma corretora**, garantido por índice único. Atender duas corretoras exige duas contas.                                                                                                                                                                 |
+| D10 | 2026-08-25 | **Nenhuma policy de tabela de domínio menciona `PLATFORM_ADMIN`.** Ele opera sobre agregados sem PII; ver dado de cliente exige acesso assistido autorizado pelo gestor da corretora.                                                                                                            |
+| D11 | 2026-08-25 | Três categorias de tabela — domínio, catálogo da plataforma, plataforma restrita — declaradas em toda migration.                                                                                                                                                                                 |
+| D12 | 2026-08-25 | Tenant do lead resolvido por `canal_captacao`, nunca por campo do corpo. Canal desconhecido vai para quarentena, sem tenant padrão.                                                                                                                                                              |
+| D13 | 2026-08-25 | **Portão de qualidade:** cobertura ≥98% (linhas e branches), duplicação ≤2%, worktree sempre verde. Condição de merge, não meta.                                                                                                                                                                 |
+| D14 | 2026-08-25 | Homologação em Docker Compose, isolada, com volume sintético realista.                                                                                                                                                                                                                           |
+| D15 | 2026-08-25 | Quatro modos de dados. Ver produção localmente é por **snapshot anonimizado** (`espelho`); dado real só em `producao-leitura`, réplica somente leitura com sessão auditada de 60 min.                                                                                                            |
+| D16 | 2026-08-25 | Todo conector nasce com stub que cumpre o contrato e permite reprocessar quando a API real chegar.                                                                                                                                                                                               |
+| D17 | 2026-08-25 | **Renovação é mecanismo, não pós-venda genérico:** a emissão agenda D-60, que abre oportunidade nova no mesmo contato. Sem isso o produto vende uma vez só.                                                                                                                                      |
+| D18 | 2026-08-25 | Carteira existente entra por importação validada, idempotente e reversível por lote, já agendando renovações.                                                                                                                                                                                    |
+| D19 | 2026-08-25 | **A conversa tem um dono.** Atribuição silencia a automação; devolver à régua é ação explícita do consultor.                                                                                                                                                                                     |
+| D20 | 2026-08-25 | Janela de 24 h do WhatsApp imposta num único portão de envio; template sem aprovação registrada não dispara.                                                                                                                                                                                     |
+| D21 | 2026-08-25 | E-mail é família de conector, não detalhe: é o caminho alternativo quando o telefone não é válido.                                                                                                                                                                                               |
+| D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                                                                                                                      |
+| D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                                                                                                                     |
+| D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                                                                                                                            |
+| D29 | 2026-08-25 | **`usuario_corretora` fundida em `usuario`.** A D9 (um usuário, uma corretora) tornou a tabela de vínculo redundante — ela existia para um N-para-N agora proibido. Uma tabela a menos, um join a menos em toda policy, e a regra passa a ser garantida por `check constraint` em vez de índice. |
+| D26 | 2026-08-25 | **ESLint fica na linha 9.** O `typescript-eslint` que acompanha o Next ainda não suporta a 10 — ela falha com `scopeManager.addGlobals is not a function`. Revisar quando o Next atualizar.                                                                                                      |
+| D27 | 2026-08-25 | Marcadores pendentes verificados por script sensível a maiúsculas, não pelo ESLint: a regra `no-warning-comments` é insensível a caixa e marcaria a palavra portuguesa "todo".                                                                                                                   |
+| D28 | 2026-08-25 | O fluxograma `Atendimento Leads Total.pdf` fica **fora do Git** — contém nome e CPF reais de um cliente. Permanece na máquina como documento de referência.                                                                                                                                      |
+| D25 | 2026-08-25 | Denominador da cobertura definido, com pirâmide: RLS testado contra Postgres real; E2E no portão, fora do cálculo.                                                                                                                                                                               |
 
 ---
 
@@ -234,16 +235,27 @@ Supabase CLI entra como dependência de desenvolvimento.
 
 ## 8. Fatias entregues
 
-| Fatia                    | Estado | O que ficou de pé                                                                                                                                                                                                                   |
-| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Repositório e portão | ✅     | Next 16 + React 19 + TS strict; portão único verde (cobertura 100%, 0 clones); ganchos de commit e push; CI no GitHub Actions; Supabase CLI subindo Postgres 17, Auth e Storage em containers; redator de PII como primeiro módulo. |
-| 1 — Tenant e RLS         | —      | Próxima                                                                                                                                                                                                                             |
-| 2 — Login                | —      |                                                                                                                                                                                                                                     |
-| 3 a 8                    | —      |                                                                                                                                                                                                                                     |
+| Fatia                    | Estado | O que ficou de pé                                                                                                                                                                                                                                               |
+| ------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Repositório e portão | ✅     | Next 16 + React 19 + TS strict; portão único verde (cobertura 100%, 0 clones); ganchos de commit e push; CI no GitHub Actions; Supabase CLI subindo Postgres 17, Auth e Storage em containers; redator de PII como primeiro módulo.                             |
+| 1 — Tenant e RLS         | ✅     | Migration de tenant com 5 tabelas categorizadas; hook de access token injetando `corretora_id` e `papel`; RLS habilitado e forçado; recorte de coluna impedindo autopromoção; seed com 2 corretoras e 5 logins; 39 testes de integração contra o Postgres real. |
+| 2 — Login                | —      |                                                                                                                                                                                                                                                                 |
+| 3 a 8                    | —      |                                                                                                                                                                                                                                                                 |
 
-O portão foi verificado nos dois sentidos: um módulo sem teste derruba a cobertura e retorna código 1;
-removido, volta a 0. Escrever o redator com teste já pegou um defeito real — a regra de telefone consumia
-o meio de um CPF, porque a fronteira de palavra trata a transição dígito/pontuação como fronteira.
+O portão foi verificado nos dois sentidos, duas vezes:
+
+- **Fatia 0:** um módulo sem teste derruba a cobertura e retorna código 1; removido, volta a 0.
+- **Fatia 1:** uma tabela criada sem RLS, sem policy e sem categoria fez o teste de catálogo gerar três
+  asserções novas e reprovar. O teste se monta a partir do `pg_class`, então tabela nova não passa
+  despercebida.
+
+Dois defeitos reais apareceram por escrever o teste junto com o código:
+
+1. A regra de telefone do redator consumia o meio de um CPF — a fronteira de palavra trata a transição
+   dígito/pontuação como fronteira.
+2. Dois testes de escalonamento de privilégio **passavam pelo motivo errado**: o PostgREST recusa `PATCH`
+   sem filtro com o código `21000`, e eles nunca chegaram a exercitar o recorte de colunas. Reescritos com
+   filtro, agora afirmam o código `42501` — o privilégio negando de fato.
 
 ---
 
@@ -253,6 +265,7 @@ o meio de um CPF, porque a fronteira de palavra trata a transição dígito/pont
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
 | 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
+| 2026-08-25 | **Fatia 1 entregue.** Tenant, RLS, hook de claims, seed com 5 logins e 39 testes de integração. CI passou a subir o Supabase para rodar isolamento. Fechada D29.                                                                                                                  |
 | 2026-08-25 | **Fatia 0 entregue e publicada** em `github.com/skyomen/venitus.on`. Portão verde, CI configurado, stack local em Docker. Fechadas D26–D28.                                                                                                                                       |
 | 2026-08-25 | Criado `PLANO-ESQUELETO.md`: nove fatias até o fluxo rodando com stubs. Repositório e credenciais de acesso definidos.                                                                                                                                                            |
 | 2026-08-25 | Segunda revisão antes do código: 7 lacunas fora do tenant (G1–G7), com destaque para renovação de apólice e arbitragem bot×consultor. Fechadas D17–D25.                                                                                                                           |
