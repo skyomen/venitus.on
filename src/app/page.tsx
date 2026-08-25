@@ -1,9 +1,9 @@
-// Placeholder da fatia 0. A fatia 2 substitui esta rota pela tela de login.
-export default function Pagina() {
-  return (
-    <main style={{ padding: '2rem', maxWidth: '40rem' }}>
-      <h1>Venitus.on</h1>
-      <p>Esqueleto no ar. O login entra na fatia 2 do plano.</p>
-    </main>
-  );
+import { redirect } from 'next/navigation';
+import { obterSessao } from '@/seguranca/sessao';
+import { ROTA_LOGIN, rotaInicialDe } from '@/seguranca/autorizacao';
+
+// A raiz não tem conteúdo próprio: ela encaminha para a área de quem chegou.
+export default async function Pagina() {
+  const sessao = await obterSessao();
+  redirect(sessao === null ? ROTA_LOGIN : rotaInicialDe(sessao.papel));
 }

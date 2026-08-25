@@ -21,13 +21,25 @@ export default defineConfig({
         'src/**/*.test.{ts,tsx}',
         'src/**/*.d.ts',
 
-        // Pontos de entrada do framework: só composição, sem lógica.
-        // Lógica que aparecer aqui é sinal de que ela está no lugar errado.
-        'src/app/**/layout.tsx',
-        'src/app/**/page.tsx',
-        'src/app/**/loading.tsx',
-        'src/app/**/error.tsx',
-        'src/app/**/not-found.tsx',
+        // Pontos de entrada do framework: rotas, layouts e Server Actions.
+        // São composição e orquestração; a decisão que eles tomam vive em
+        // `seguranca/autorizacao.ts`, `seguranca/perfil.ts` e `seguranca/credenciais.ts`,
+        // que são puros e cobertos. Lógica que aparecer aqui está no lugar errado.
+        'src/app/**',
+
+        // Guard de rota. Ele delega inteiramente a `decidirRota`, que é testada
+        // em todos os ramos. Além disso não é segurança (§4.1, V13) — quem barra
+        // é o layout de cada área e a RLS.
+        'src/proxy.ts',
+
+        // Adaptador de infraestrutura: liga o Supabase ao cookie do Next e não
+        // decide nada. A fronteira que ele protege é verificada por
+        // `npm run bundle` e pelos testes de isolamento contra o Postgres real.
+        'src/dados/cliente-servidor.ts',
+
+        // Chamada ao Auth mais redirecionamento. Toda a decisão está em
+        // `perfil.ts` e `autorizacao.ts`.
+        'src/seguranca/sessao.ts',
 
         // Tipos gerados a partir do schema do banco.
         'src/dados/tipos-gerados.ts',

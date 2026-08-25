@@ -76,6 +76,18 @@ build conclui · formatação sem diferença · worktree limpo
 Não se encerra uma tarefa com teste quebrado, cobertura caída ou tipo com erro — nem "para arrumar no
 próximo commit". Mudança que não cabe inteira é dividida em fatias que fecham verdes.
 
+**Nunca entregar abaixo de 98%.** Rodar `npm run portao` e conferir o código de saída **antes** de dizer
+que algo está pronto. Se a cobertura caiu, o trabalho não acabou.
+
+**Nunca relatar número intermediário como se fosse a entrega.** Números vermelhos que apareceram no meio
+do caminho e já foram resolvidos não entram no relatório de conclusão — eles confundem o que foi entregue
+com o que foi passageiro. Se valer a pena contar como o problema foi resolvido, contar depois de afirmar o
+estado final, e deixar claro que é histórico.
+
+**Só dizer que algo funciona depois de exercitar o caminho que o usuário vai usar.** Verificar as partes
+não é verificar o todo: um login pode ter rota, guard, cookie e claims corretos e ainda assim não deixar
+ninguém entrar. Se não houver teste automático desse caminho, escrever um antes de anunciar.
+
 **Baixar o limite para fazer o CI passar é proibido.** Se 98% não for alcançável em algum arquivo, a saída
 é redesenhar o código para ser testável, ou registrar a exclusão em `vitest.config.ts` com justificativa
 escrita. Nunca `/* c8 ignore */` espalhado no código.
@@ -155,5 +167,8 @@ continua quente.
   forçado, `with check`, índice de tenant, revoke de `anon` e teste de isolamento.
 - Decisões ainda abertas seguem em `MEMORY.md`. Elas não bloqueiam mais a arquitetura, só fatias
   específicas da implementação.
+- **O Next 16 mudou convenções.** Antes de escrever código de framework, consulte
+  `node_modules/next/dist/docs/` — o conhecimento prévio sobre versões anteriores desinforma mais do que
+  ajuda. Já mordeu aqui: `middleware.ts` virou `proxy.ts`, e `coverage.all` saiu do Vitest 4.
 - Ao fechar uma decisão ou descobrir um fato durável sobre o produto, **registre em `MEMORY.md`** na mesma
   sessão. Fato durável vai para `MEMORY.md`; regra durável vai para este arquivo.

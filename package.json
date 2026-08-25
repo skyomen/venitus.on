@@ -15,24 +15,29 @@
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
     "dup": "jscpd",
-    "portao": "npm run format:check && npm run lint && npm run typecheck && npm run marcadores && npm run test:cov && npm run test:db && npm run dup && npm run build",
+    "portao": "npm run format:check && npm run lint && npm run typecheck && npm run marcadores && npm run test:cov && npm run test:db && npm run dup && npm run build && npm run bundle && npm run test:e2e",
     "db:up": "supabase start",
     "db:down": "supabase stop",
     "db:reset": "supabase db reset",
     "db:status": "supabase status",
     "prepare": "lefthook install",
     "marcadores": "node scripts/verificar-marcadores.mjs",
-    "test:db": "vitest run --config vitest.db.config.mts"
+    "test:db": "vitest run --config vitest.db.config.mts",
+    "bundle": "node --env-file-if-exists=.env scripts/verificar-bundle.mjs",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
     "next": "^16.3.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^26.3.0",
@@ -47,6 +52,7 @@
     "lefthook": "^2.1.10",
     "pg": "^8.23.0",
     "prettier": "^3.9.6",
+    "server-only": "^0.0.1",
     "supabase": "^2.115.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

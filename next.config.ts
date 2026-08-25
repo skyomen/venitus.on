@@ -14,6 +14,11 @@ const cabecalhosSeguranca = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+
+  // O `next dev` acrescenta um bloco próprio ao AGENTS.md a cada execução, o que
+  // deixaria a worktree suja e contraria a regra do portão. O aviso dele é útil e
+  // está reescrito na seção "Como trabalhar aqui" do nosso AGENTS.md.
+  agentRules: false,
   poweredByHeader: false,
   async headers() {
     return [{ source: '/:path*', headers: cabecalhosSeguranca }];
