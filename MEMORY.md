@@ -7,8 +7,8 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** fatias 0 a 5 entregues e verdes. A fatia 6 começou: a fila do consultor já é percorrível
-no navegador.
+**Fase:** fatias 0 a 5 entregues e verdes. A fatia 6 vai pela metade: o consultor já percorre a
+jornada inteira no navegador — início, fila, puxar o próximo e atender.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -19,9 +19,12 @@ corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão 
 
 **Próximo marco:** 6.3 — as telas do gestor: funil, SLA e produtividade. Ver a seção 10.
 
-**Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
+**Repositório:** `https://github.com/skyomen/venitus.on.git`, ramo `main`, publicado até a fatia 6.2.
 Identidade dos commits: `meyksonLeite <meyksonleite@gmail.com>`.
 `gh` CLI não está instalado; push por HTTPS.
+
+O gancho de pre-push roda o portão inteiro, então `git push` demora cerca de 80 segundos e **exige o
+Docker no ar**. Sem banco ele falha antes de enviar qualquer coisa — que é o comportamento certo.
 
 ---
 
