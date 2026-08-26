@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { CartaoOportunidade } from '@/componentes/dominio/cartao-oportunidade';
 import { lerMeusAtendimentos } from '@/dados/consultas/atendimentos';
 import { exigirAcesso } from '@/seguranca/sessao';
@@ -38,7 +39,11 @@ export default async function Pagina() {
             <CartaoOportunidade
               key={cartao.id}
               cartao={cartao}
-              acao={<p className="apoio">Atribuído a você.</p>}
+              acao={
+                <Link href={`/app/atendimento/${cartao.id}`} className="botao botao--primario">
+                  Abrir atendimento
+                </Link>
+              }
             />
           ))}
         </div>

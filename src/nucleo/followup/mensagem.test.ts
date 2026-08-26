@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ETAPAS, TIPOS_DE_PENDENCIA, montarTextoContextual } from './mensagem';
-import type { DadosDaMensagem, Etapa, TipoDePendencia } from './mensagem';
+import { TIPOS_DE_PENDENCIA, montarTextoContextual } from './mensagem';
+import { ETAPAS } from '@/nucleo/jornada/etapa';
+import type { DadosDaMensagem, TipoDePendencia } from './mensagem';
+import type { Etapa } from '@/nucleo/jornada/etapa';
 
 /** Vitest não traz `toStartWith`/`toEndWith`; recortar o trecho dá erro legível. */
 function comeca(texto: string, inicio: string): string {

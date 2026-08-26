@@ -57,6 +57,13 @@ describe('data', () => {
     expect(data(0)?.toISOString()).toBe('1970-01-01T00:00:00.000Z');
   });
 
+  it('data já convertida passa direto', () => {
+    // Ela atravessa mais de um passo do caminho antes de chegar à tela.
+    const quando = new Date('2026-08-26T12:00:00.000Z');
+    expect(data(quando)).toBe(quando);
+    expect(data(new Date('nada'))).toBeNull();
+  });
+
   it('data inválida é indistinguível de ausente', () => {
     expect(data('ontem à tarde')).toBeNull();
     expect(data(null)).toBeNull();

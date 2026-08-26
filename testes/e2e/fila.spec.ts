@@ -72,7 +72,7 @@ test.describe('a fila do consultor', () => {
 
     await page.goto('/app/atendimentos');
     await expect(page.getByRole('heading', { name: cliente.nome })).toBeVisible();
-    await expect(page.getByText('Atribuído a você.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Abrir atendimento' })).toBeVisible();
   });
 
   test('a fila vazia diz o que vai preenchê-la', async ({ page }) => {

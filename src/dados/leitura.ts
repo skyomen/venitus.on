@@ -26,6 +26,11 @@ export function booleano(valor: unknown): boolean {
 
 /** Data inválida é indistinguível de data ausente para quem decide. */
 export function data(valor: unknown): Date | null {
+  // Já convertida noutro passo do caminho: passa direto, em vez de virar
+  // ausência por não ser texto.
+  if (valor instanceof Date) {
+    return Number.isNaN(valor.getTime()) ? null : valor;
+  }
   if (typeof valor !== 'string' && typeof valor !== 'number') {
     return null;
   }

@@ -17,7 +17,7 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** 6.2 — o atendimento com o contexto de §9.5, cotação e proposta. Ver a seção 10.
+**Próximo marco:** 6.3 — as telas do gestor: funil, SLA e produtividade. Ver a seção 10.
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
 Identidade dos commits: `meyksonLeite <meyksonleite@gmail.com>`.
@@ -120,6 +120,12 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 | D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                                                                                                                            |
 | D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                                                                                                                           |
 | D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                                                                                                                                  |
+| D63 | 2026-08-26 | **Toda escrita de domínio passa por função `security definer`** que resolve o dono por `auth.uid()`. Liberar `update` com policy diria _quais linhas_ podem mudar, mas não _como_ — e a função ainda registra o evento na linha do tempo, na mesma transação.                                          |
+| D64 | 2026-08-26 | **`oportunidade.opcao_interesse_id`** liga o plano que o cliente disse preferir à opção que a seguradora retornou. É a origem da linha "Plano de interesse" de §9.5, que até então não existia no esquema.                                                                                             |
+| D65 | 2026-08-26 | **A `Etapa` mora em `nucleo/jornada/etapa.ts`**, não dentro do follow-up. É o conceito central do domínio: quase tudo pergunta em que ponto a oportunidade está.                                                                                                                                       |
+| D66 | 2026-08-26 | **Só as etapas terminais têm cor.** Pintar catorze faria nenhuma se destacar, e a cor deixaria de significar "olhe para isto".                                                                                                                                                                         |
+| D67 | 2026-08-26 | **Dinheiro é formatado à mão, não por `Intl`.** O `Intl` usa espaço fino não separável entre "R$" e o número: invisível na tela e invisível também no teste que procura "R$ 1.234,56" e não encontra.                                                                                                  |
+| D68 | 2026-08-26 | **Pendência resolvida continua na lista, apagada.** Sumir com ela faria o consultor pedir de novo um documento que o cliente já mandou.                                                                                                                                                                |
 | D59 | 2026-08-26 | **A fila entrega; o consultor não escolhe.** Não existe função nem botão para assumir uma oportunidade específica: escolher a dedo desmontaria a ordem de §9.4, e o lead frio que envelhece nunca mais seria atendido.                                                                                 |
 | D60 | 2026-08-26 | **A tela chama `assumir_proxima_da_fila()`, que não recebe parâmetro.** A identidade vem de `auth.uid()`. `distribuir_proxima(uuid)` segue fechada para `authenticated`: liberá-la deixaria um consultor atribuir trabalho a outra pessoa.                                                             |
 | D61 | 2026-08-26 | **Espera confortável até 15 min, limite em 60.** Não há número fechado no blueprint; este é o padrão até a corretora configurar o dela. Quinze minutos é o tempo em que o cliente ainda lembra que pediu cotação; uma hora parado é lead esfriando.                                                    |
@@ -297,23 +303,24 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 
 ## 9. Log de sessões
 
-| Data       | O que aconteceu                                                                                                                                                                                                                                                                   |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
-| 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
-| 2026-08-26 | **Fatia 6.1 entregue.** A fila do consultor no navegador: `Estado`, `MedidorDeIntencao` e `CartaoOportunidade`; DTO de §9.5; leitura sob RLS; puxar o próximo; início com números reais. 632 testes de unidade a 100%, 257 de integração, 41 E2E. Fechadas D59–D62.               |
-| 2026-08-26 | **Fatia 5 fechada.** Adaptadores do worker ao Supabase, `contexto_do_disparo`, mensagem contextual e teste de integração percorrendo a régua inteira. Portão verde por código de saída: 565 testes de unidade a 100%, 245 de integração, 33 E2E, 0 clones. Fechadas D53–D58.      |
-| 2026-08-25 | **Fatia 5, segunda metade.** Conector de CRM com stub honesto, decisões do worker e laço de drenagem com isolamento de falha. 469 testes de unidade, 100% de cobertura. Fechadas D50–D52. Falta só a camada de adaptadores ao banco — ver seção 10.                               |
-| 2026-08-25 | **Fatia 5, primeira metade.** Prioridade da fila, distribuição com `SKIP LOCKED` e capacidade, três réguas com cadências reais, portão único de envio, disjuntor e reexecução, conector de WhatsApp com stub honesto. Fechadas D45–D49.                                           |
-| 2026-08-25 | **Fatia 4 entregue.** Validação de formato e dígito verificador, contrato de conector com stub validado por teste de contrato, cadeia de validação de §8.3, entrada de lead por canal com quarentena e webhook com assinatura. Fechadas D41–D44.                                  |
-| 2026-08-25 | **Design system Vidro Polar implementado.** Tokens em três camadas, tema claro e escuro em ciclo de três estados resolvido no servidor, seis componentes base com teste, densidade por área. Criado `design-system.md`. Fechadas D37–D40.                                         |
-| 2026-08-25 | **Fatia 3 entregue, mais o MFA que faltava da fatia 2.** 31 tabelas no total, máquina de estados com caminho único, deduplicação de contato e segundo fator completo. Dois defeitos reais achados pelos testes. Fechadas D32–D36.                                                 |
-| 2026-08-25 | **Fatia 2 entregue.** Login corrigido (`getClaims` no lugar de `getUser`), Playwright no portão, 106 testes de unidade + 39 de integração + 14 E2E. Regra de entrega registrada no `AGENTS.md`. Fechadas D30–D31.                                                                 |
-| 2026-08-25 | **Fatia 1 entregue.** Tenant, RLS, hook de claims, seed com 5 logins e 39 testes de integração. CI passou a subir o Supabase para rodar isolamento. Fechada D29.                                                                                                                  |
-| 2026-08-25 | **Fatia 0 entregue e publicada** em `github.com/skyomen/venitus.on`. Portão verde, CI configurado, stack local em Docker. Fechadas D26–D28.                                                                                                                                       |
-| 2026-08-25 | Criado `PLANO-ESQUELETO.md`: nove fatias até o fluxo rodando com stubs. Repositório e credenciais de acesso definidos.                                                                                                                                                            |
-| 2026-08-25 | Segunda revisão antes do código: 7 lacunas fora do tenant (G1–G7), com destaque para renovação de apólice e arbitragem bot×consultor. Fechadas D17–D25.                                                                                                                           |
-| 2026-08-25 | Auditoria do modelo de tenant (seção 6): 4 falhas estruturais encontradas e fechadas, 5 lacunas de configuração por corretora preenchidas. Adicionados ao blueprint: qualidade (§20), Docker de homologação (§17), modos de dados (§18) e conector stub (§10.5). Fechadas D9–D16. |
+| Data       | O que aconteceu                                                                                                                                                                                                                                                                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                                                          |
+| 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                                           |
+| 2026-08-26 | **Fatia 6.2 entregue.** A tela de atendimento: contexto, pendências com prazo em palavras, opções de plano ordenadas por preço e linha do tempo. Resolver pendência e marcar o plano de interesse, por função que confere o dono. 770 testes de unidade a 100%, 273 de integração, 47 E2E. Fechadas D63–D68. |
+| 2026-08-26 | **Fatia 6.1 entregue.** A fila do consultor no navegador: `Estado`, `MedidorDeIntencao` e `CartaoOportunidade`; DTO de §9.5; leitura sob RLS; puxar o próximo; início com números reais. 632 testes de unidade a 100%, 257 de integração, 41 E2E. Fechadas D59–D62.                                          |
+| 2026-08-26 | **Fatia 5 fechada.** Adaptadores do worker ao Supabase, `contexto_do_disparo`, mensagem contextual e teste de integração percorrendo a régua inteira. Portão verde por código de saída: 565 testes de unidade a 100%, 245 de integração, 33 E2E, 0 clones. Fechadas D53–D58.                                 |
+| 2026-08-25 | **Fatia 5, segunda metade.** Conector de CRM com stub honesto, decisões do worker e laço de drenagem com isolamento de falha. 469 testes de unidade, 100% de cobertura. Fechadas D50–D52. Falta só a camada de adaptadores ao banco — ver seção 10.                                                          |
+| 2026-08-25 | **Fatia 5, primeira metade.** Prioridade da fila, distribuição com `SKIP LOCKED` e capacidade, três réguas com cadências reais, portão único de envio, disjuntor e reexecução, conector de WhatsApp com stub honesto. Fechadas D45–D49.                                                                      |
+| 2026-08-25 | **Fatia 4 entregue.** Validação de formato e dígito verificador, contrato de conector com stub validado por teste de contrato, cadeia de validação de §8.3, entrada de lead por canal com quarentena e webhook com assinatura. Fechadas D41–D44.                                                             |
+| 2026-08-25 | **Design system Vidro Polar implementado.** Tokens em três camadas, tema claro e escuro em ciclo de três estados resolvido no servidor, seis componentes base com teste, densidade por área. Criado `design-system.md`. Fechadas D37–D40.                                                                    |
+| 2026-08-25 | **Fatia 3 entregue, mais o MFA que faltava da fatia 2.** 31 tabelas no total, máquina de estados com caminho único, deduplicação de contato e segundo fator completo. Dois defeitos reais achados pelos testes. Fechadas D32–D36.                                                                            |
+| 2026-08-25 | **Fatia 2 entregue.** Login corrigido (`getClaims` no lugar de `getUser`), Playwright no portão, 106 testes de unidade + 39 de integração + 14 E2E. Regra de entrega registrada no `AGENTS.md`. Fechadas D30–D31.                                                                                            |
+| 2026-08-25 | **Fatia 1 entregue.** Tenant, RLS, hook de claims, seed com 5 logins e 39 testes de integração. CI passou a subir o Supabase para rodar isolamento. Fechada D29.                                                                                                                                             |
+| 2026-08-25 | **Fatia 0 entregue e publicada** em `github.com/skyomen/venitus.on`. Portão verde, CI configurado, stack local em Docker. Fechadas D26–D28.                                                                                                                                                                  |
+| 2026-08-25 | Criado `PLANO-ESQUELETO.md`: nove fatias até o fluxo rodando com stubs. Repositório e credenciais de acesso definidos.                                                                                                                                                                                       |
+| 2026-08-25 | Segunda revisão antes do código: 7 lacunas fora do tenant (G1–G7), com destaque para renovação de apólice e arbitragem bot×consultor. Fechadas D17–D25.                                                                                                                                                      |
+| 2026-08-25 | Auditoria do modelo de tenant (seção 6): 4 falhas estruturais encontradas e fechadas, 5 lacunas de configuração por corretora preenchidas. Adicionados ao blueprint: qualidade (§20), Docker de homologação (§17), modos de dados (§18) e conector stub (§10.5). Fechadas D9–D16.                            |
 
 ---
 
@@ -343,27 +350,28 @@ rodam — e sem eles não há portão verde, logo não se commita.
 **Conferir o código de saída do portão de verdade.** `npm run portao | tail` devolve o código do
 `tail`, não o do portão. Redirecionar para arquivo e ler `$?` depois.
 
-### O que vem agora: 6.2, o atendimento
+### O que vem agora: 6.3, as telas do gestor
 
-A fatia 6 está sendo entregue em partes. **6.1 está fechada**: o início com números reais, a fila
-com o cartão de §9.5, e puxar o próximo cliente — tudo exercitado por E2E em perfil de celular.
+A fatia 6 está sendo entregue em partes. **6.1 e 6.2 estão fechadas**: o início com números reais,
+a fila com o cartão de §9.5, puxar o próximo cliente, e a tela de atendimento com pendências,
+opções de plano e linha do tempo — tudo exercitado por E2E em perfil de celular.
 
 Falta:
 
-- **6.2** — a tela de atendimento com o contexto da conversa, cotação, proposta e pendências. É
-  onde `plano_de_interesse` finalmente ganha origem no esquema: hoje o cartão omite a linha porque
-  nada a registra.
-- **6.3** — `/gestor`: funil, SLA, produtividade.
+- **6.3** — `/gestor`: funil, SLA, produtividade. Os dados já existem em `oportunidade_evento`,
+  que é a base das métricas (§15.1). Ler `design-system.md` §12 antes: funil é sequência, um matiz
+  só, e todo gráfico tem equivalente em tabela.
 - **6.4** — `/admin`: corretoras, usuários, saúde das integrações.
+- Ainda no `/app`: proposta e carteira, que dependem de escrita nas tabelas de proposta e apólice.
 
 O plano está em `PLANO-ESQUELETO.md`; o desenho, em `design-system.md`.
 
-- `/app` — resta o atendimento com o contexto de §9.5, cotação, proposta, pendências e carteira.
 - `/gestor` — funil, SLA, produtividade.
 - `/admin` — corretoras, usuários, saúde das integrações.
 - Mobile primeiro, 1 a 2 cliques, acessibilidade (§5.4). Todo Client Component recebe DTO.
-- `CartaoOportunidade`, `Estado` e `MedidorDeIntencao` já existem, em `componentes/base` e
-  `componentes/dominio`. Marcador geométrico e medidor de três traços, **nunca** cápsula colorida.
+- Os componentes de domínio já existem em `componentes/dominio`: `CartaoOportunidade`,
+  `MedidorDeIntencao`, `ListaDePendencias`, `OpcoesDeCotacao` e `LinhaDoTempo`. Marcador geométrico
+  e medidor de três traços, **nunca** cápsula colorida.
 
 **Aceite:** a jornada completa é percorrível pela interface, em um telefone.
 
@@ -390,6 +398,8 @@ recebe dependência por parâmetro. Retrofitar cobertura de UI depois custa muit
 - **`server-only` lança dentro do Vitest.** `vitest.db.config.mts` resolve o pacote para o `empty.js`
   dele por alias. Declarar a condição `react-server` no `resolve` global parece mais elegante e
   quebra o `pg`, que troca de entrada conforme ela.
+- **Escrita de domínio não passa por `update` do `authenticated`.** O privilégio foi revogado; use
+  função `security definer` com checagem por `auth.uid()`, como `resolver_pendencia`.
 - **A reserva do worker é global**, uma fila só para todos os tenants. Teste que drena precisa
   neutralizar o que os outros arquivos deixaram pendente antes de afirmar qualquer coisa — ver
   `limparFilaAlheia` em `testes/jornada/worker.test.ts`.

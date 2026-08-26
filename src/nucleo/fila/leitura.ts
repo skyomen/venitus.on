@@ -99,10 +99,10 @@ export function montarLinhaDaFila(bruto: unknown, agora: Date): LinhaDaFila | nu
     preocupacao: preocupacaoDe(qualificacao?.['preocupacao_principal']),
     veiculo: veiculoDe(linha['risco_veiculo']),
     cotada: cotadaDe(linha['cotacao']),
-    // O esquema ainda não registra qual plano o cliente disse preferir — §9.5
-    // pede essa linha e ela entra com a tela de cotação. Até lá o cartão a
-    // omite, em vez de mostrar um traço que não informa nada.
-    planoDeInteresse: null,
+    // O plano que o cliente disse preferir, gravado no atendimento. A relação
+    // é direta: `oportunidade.opcao_interesse_id` aponta para a opção que a
+    // seguradora retornou.
+    planoDeInteresse: texto(primeiro(linha['cotacao_opcao'])?.['nome_plano']),
     pendencia: pendenciaDe(linha['pendencia'], agora),
   };
 }

@@ -654,6 +654,93 @@ p {
   border-radius: var(--raio-2);
 }
 
+/* ==========================================================================
+   TEXTO SÓ PARA LEITOR DE TELA
+   "Resolver" repetido oito vezes não diz qual pendência. O nome vai junto,
+   invisível na tela e presente na lista de botões do leitor.
+   ========================================================================== */
+.apenas-leitor-de-tela {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
+   PENDÊNCIAS E OPÇÕES DO ATENDIMENTO
+   ========================================================================== */
+.lista-pendencias,
+.lista-opcoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--e2);
+}
+
+.lista-pendencias > li,
+.lista-opcoes > li {
+  background: var(--painel-fundo);
+  border: 1px solid var(--borda-sutil);
+  border-radius: var(--raio-2);
+  padding: var(--linha-padding-y) var(--linha-padding-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--e2);
+}
+
+/* Resolvida continua na lista, apagada: sumir com ela faria o consultor
+   perguntar de novo por um documento que o cliente já mandou. */
+.lista-pendencias > li[data-resolvida] {
+  opacity: 0.6;
+}
+
+.lista-opcoes > li[data-escolhida] {
+  border-color: var(--bom);
+  box-shadow: inset 2px 0 0 var(--bom);
+}
+
+.lista-opcoes-plano {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lista-opcoes-numeros {
+  display: flex;
+  gap: var(--e4);
+  margin: 0;
+}
+
+.lista-opcoes-numeros dd {
+  margin: 0;
+}
+
+/* ==========================================================================
+   LINHA DO TEMPO
+   ========================================================================== */
+.linha-do-tempo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--e3);
+  border-left: 1px solid var(--borda-sutil);
+  padding-left: var(--e3);
+}
+
+.linha-do-tempo > li {
+  display: grid;
+  gap: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::after {

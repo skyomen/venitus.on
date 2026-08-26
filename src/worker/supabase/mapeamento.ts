@@ -1,8 +1,10 @@
 import { OPERACOES_CRM } from '@/conectores/crm/contrato';
 import type { Espelhamento, OperacaoCrm } from '@/conectores/crm/contrato';
 import type { Resultado } from '@/conectores/contrato';
-import { ETAPAS, TIPOS_DE_PENDENCIA, montarTextoContextual } from '@/nucleo/followup/mensagem';
-import type { Etapa, PendenciaAberta } from '@/nucleo/followup/mensagem';
+import { TIPOS_DE_PENDENCIA, montarTextoContextual } from '@/nucleo/followup/mensagem';
+import { ETAPAS } from '@/nucleo/jornada/etapa';
+import type { PendenciaAberta } from '@/nucleo/followup/mensagem';
+import type { Etapa } from '@/nucleo/jornada/etapa';
 import { REGUAS, passosDaRegua } from '@/nucleo/followup/regua';
 import type { Regua } from '@/nucleo/followup/regua';
 import type { DonoConversa } from '@/nucleo/followup/portao-de-envio';

@@ -118,3 +118,42 @@ export async function porNaFila(cliente: ClienteSintetico): Promise<void> {
     [CORRETORA_ALFA, oportunidade],
   );
 }
+
+/**
+ * A oportunidade já atribuída ao consultor, com opções de plano e pendência.
+ *
+ * O cenário da tela de atendimento: é dela que o consultor resolve pendência e
+ * marca o plano que o cliente quer.
+ */
+export async function emAtendimento(cliente: ClienteSintetico): Promise<string> {
+  await porNaFila(cliente);
+
+  const oportunidade = await umId(
+    `select o.id
+     from public.oportunidade o
+     join public.contato c on c.id = o.contato_id
+     where c.telefone_e164 = $1`,
+    [cliente.telefone],
+  );
+
+  const cotacao = await umId(`select id from public.cotacao where oportunidade_id = $1 limit 1`, [
+    oportunidade,
+  ]);
+  await executar(
+    `insert into public.cotacao_opcao (corretora_id, cotacao_id, nome_plano, premio, franquia)
+     values ($1, $2, 'Compreensiva', 2400.00, 3500.00),
+            ($1, $2, 'Essencial', 1800.00, 4200.00)`,
+    [CORRETORA_ALFA, cotacao],
+  );
+
+  await executar(
+    `update public.oportunidade
+        set consultor_id = (select id from public.usuario where email = 'consultor@alfa.local'),
+            atribuido_em = now()
+      where id = $1`,
+    [oportunidade],
+  );
+  await mover(oportunidade, ['ATRIBUIDO']);
+
+  return oportunidade;
+}

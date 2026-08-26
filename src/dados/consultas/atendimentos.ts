@@ -23,6 +23,7 @@ const SELECAO = `
   qualificacao ( intencao, completude, preocupacao_principal ),
   risco_veiculo ( marca, modelo, ano_modelo ),
   cotacao ( status ),
+  cotacao_opcao ( nome_plano ),
   pendencia ( descricao, prazo )
 `;
 

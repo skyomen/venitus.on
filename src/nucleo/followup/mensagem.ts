@@ -1,3 +1,5 @@
+import type { Etapa } from '@/nucleo/jornada/etapa';
+
 /**
  * O texto de um follow-up em texto livre (blueprint §11.2).
  *
@@ -8,28 +10,6 @@
  * Só o texto livre passa por aqui. Fora da janela de 24 h quem fala é template
  * aprovado, e o corpo dele é da corretora, não nosso.
  */
-
-export const ETAPAS = [
-  'NOVO',
-  'EM_VALIDACAO',
-  'AGUARDANDO_DADO',
-  'QUALIFICADO',
-  'EM_COTACAO',
-  'COTADO',
-  'NA_FILA',
-  'ATRIBUIDO',
-  'EM_NEGOCIACAO',
-  'PROPOSTA_EM_ELABORACAO',
-  'PROPOSTA_TRANSMITIDA',
-  'EM_VISTORIA',
-  'EM_ANALISE_SEGURADORA',
-  'AGUARDANDO_APOLICE',
-  'VENDIDA',
-  'PERDIDA',
-  'ENCERRADA_SEM_CONTATO',
-] as const;
-
-export type Etapa = (typeof ETAPAS)[number];
 
 export const TIPOS_DE_PENDENCIA = [
   'DOCUMENTO',
