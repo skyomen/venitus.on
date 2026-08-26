@@ -7,7 +7,7 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** fatia 5 quase concluída — falta apenas ligar o worker ao banco (os adaptadores) e o teste ponta a ponta da régua.
+**Fase:** fatias 0 a 5 entregues e verdes. O motor da operação está de pé; falta a interface.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -16,7 +16,7 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** ver a seção 10, "Retomada", logo abaixo.
+**Próximo marco:** fatia 6 — as telas do fluxo. Ver a seção 10, "Retomada", logo abaixo.
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
 Identidade dos commits: `meyksonLeite <meyksonleite@gmail.com>`.
@@ -119,6 +119,12 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 | D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                                                                                                                            |
 | D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                                                                                                                           |
 | D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                                                                                                                                  |
+| D53 | 2026-08-26 | **O contexto de um disparo sai numa consulta só** (`contexto_do_disparo`). As sete condições do portão moram em cinco tabelas; buscá-las em cinco viagens deixaria o worker decidir sobre um retrato inconsistente — o cliente responde no meio do caminho e a régua dispara mesmo assim.              |
+| D54 | 2026-08-26 | **`DESISTIU` é um status do outbox.** A reserva pega `PENDENTE` e `FALHOU`, então `FALHOU` significa "vai tentar de novo". Empurrar `proxima_tentativa_em` para daqui a cem anos funcionaria e mentiria para quem lesse a tabela.                                                                      |
+| D55 | 2026-08-26 | **`agendamento.motivo` existe.** `CANCELADO` pode ser "o consultor assumiu a conversa" ou "o cliente pediu para não receber mensagens", e quem investiga um follow-up que não saiu precisa saber qual dos dois foi.                                                                                    |
+| D56 | 2026-08-26 | **A mensagem de texto livre é composta da etapa e da pendência real**, com fecho que muda a cada tentativa. §11.2 proíbe texto genérico, e "Oi, tudo bem?" três vezes num dia é o que faz o cliente bloquear o número da corretora.                                                                    |
+| D57 | 2026-08-26 | **`service_role` recebe GRANT explícito de DML.** Com `auto_expose_new_tables` desligado — o padrão novo da nuvem — tabela criada depois não fica alcançável pelos papéis da Data API, e `service_role` é um deles. Variante da armadilha do `revoke from public`, com sintoma idêntico.               |
+| D58 | 2026-08-26 | **A stack local roda em 5532x, não no 5432x padrão.** No Windows o Hyper-V reserva faixas dinâmicas de porta, e uma delas — 54277 a 54376 — engole as sete portas do Supabase de uma vez. Sai `netsh` em terminal elevado ou reinício; mudar a porta custa uma linha.                                  |
 | D50 | 2026-08-25 | O worker fala com **portas**, nunca com o banco nem com conector concreto. É o que permite exercitar o laço inteiro — inclusive desfechos que levam dias — sem subir infraestrutura.                                                                                                                   |
 | D51 | 2026-08-25 | **Um item que estoura não derruba o lote.** A falha é registrada e o próximo segue; um fornecedor com problema não pode parar a operação inteira.                                                                                                                                                      |
 | D52 | 2026-08-25 | Bloqueio de envio tem três destinos distintos: **cancelar** (a régua perdeu o sentido), **reagendar** (é cedo demais) e **falhar** (configuração errada, que insistir não resolve).                                                                                                                    |
@@ -257,13 +263,15 @@ Supabase CLI entra como dependência de desenvolvimento.
 
 ## 8. Fatias entregues
 
-| Fatia                            | Estado | O que ficou de pé                                                                                                                                                                                                                                               |
-| -------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Repositório e portão         | ✅     | Next 16 + React 19 + TS strict; portão único verde (cobertura 100%, 0 clones); ganchos de commit e push; CI no GitHub Actions; Supabase CLI subindo Postgres 17, Auth e Storage em containers; redator de PII como primeiro módulo.                             |
-| 1 — Tenant e RLS                 | ✅     | Migration de tenant com 5 tabelas categorizadas; hook de access token injetando `corretora_id` e `papel`; RLS habilitado e forçado; recorte de coluna impedindo autopromoção; seed com 2 corretoras e 5 logins; 39 testes de integração contra o Postgres real. |
-| 2 — Login                        | ✅     | Login server-side com cookie `HttpOnly`; três áreas isoladas com guard no layout; faixa de modo de dados; 14 testes de ponta a ponta em navegador; verificação de que nenhuma chave vai ao bundle.                                                              |
-| 3 — Domínio e máquina de estados | ✅     | 26 tabelas novas com RLS e categoria; transições declaradas em tabela; gatilho que recusa `update` direto em `etapa`; deduplicação de contato; segundo fator com cadastro e verificação. 198 testes de integração, 20 E2E.                                      |
-| 4 a 8                            | —      |                                                                                                                                                                                                                                                                 |
+| Fatia                             | Estado | O que ficou de pé                                                                                                                                                                                                                                               |
+| --------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Repositório e portão          | ✅     | Next 16 + React 19 + TS strict; portão único verde (cobertura 100%, 0 clones); ganchos de commit e push; CI no GitHub Actions; Supabase CLI subindo Postgres 17, Auth e Storage em containers; redator de PII como primeiro módulo.                             |
+| 1 — Tenant e RLS                  | ✅     | Migration de tenant com 5 tabelas categorizadas; hook de access token injetando `corretora_id` e `papel`; RLS habilitado e forçado; recorte de coluna impedindo autopromoção; seed com 2 corretoras e 5 logins; 39 testes de integração contra o Postgres real. |
+| 2 — Login                         | ✅     | Login server-side com cookie `HttpOnly`; três áreas isoladas com guard no layout; faixa de modo de dados; 14 testes de ponta a ponta em navegador; verificação de que nenhuma chave vai ao bundle.                                                              |
+| 3 — Domínio e máquina de estados  | ✅     | 26 tabelas novas com RLS e categoria; transições declaradas em tabela; gatilho que recusa `update` direto em `etapa`; deduplicação de contato; segundo fator com cadastro e verificação. 198 testes de integração, 20 E2E.                                      |
+| 4 — Conectores stub e lead        | ✅     | Contrato único de conector com falha como valor; stubs de validadores, WhatsApp, CRM e seguradora, validados por teste de contrato; cadeia de validação de §8.3; webhook assinado com quarentena para canal desconhecido.                                       |
+| 5 — Fila, distribuição, follow-up | ✅     | Prioridade com pesos por corretora; distribuição com `SKIP LOCKED` e capacidade; três réguas; portão único de envio; disjuntor e reexecução; worker drenando `agendamento` e `integracao_outbox` contra o banco; tique por cron da Vercel a cada minuto.        |
+| 6 a 8                             | —      |                                                                                                                                                                                                                                                                 |
 
 O portão foi verificado nos dois sentidos, duas vezes:
 
@@ -288,6 +296,7 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
 | 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
+| 2026-08-26 | **Fatia 5 fechada.** Adaptadores do worker ao Supabase, `contexto_do_disparo`, mensagem contextual e teste de integração percorrendo a régua inteira. Portão verde por código de saída: 565 testes de unidade a 100%, 245 de integração, 33 E2E, 0 clones. Fechadas D53–D58.      |
 | 2026-08-25 | **Fatia 5, segunda metade.** Conector de CRM com stub honesto, decisões do worker e laço de drenagem com isolamento de falha. 469 testes de unidade, 100% de cobertura. Fechadas D50–D52. Falta só a camada de adaptadores ao banco — ver seção 10.                               |
 | 2026-08-25 | **Fatia 5, primeira metade.** Prioridade da fila, distribuição com `SKIP LOCKED` e capacidade, três réguas com cadências reais, portão único de envio, disjuntor e reexecução, conector de WhatsApp com stub honesto. Fechadas D45–D49.                                           |
 | 2026-08-25 | **Fatia 4 entregue.** Validação de formato e dígito verificador, contrato de conector com stub validado por teste de contrato, cadeia de validação de §8.3, entrada de lead por canal com quarentena e webhook com assinatura. Fechadas D41–D44.                                  |
@@ -304,14 +313,14 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 
 ## 10. Retomada — leia isto antes de continuar
 
-Escrito em 2026-08-25 para quem pegar o trabalho a seguir.
+Reescrito em 2026-08-26, ao fechar a fatia 5.
 
 ### Antes de qualquer coisa
 
 1. Ler `AGENTS.md` e este arquivo por inteiro. As regras de spec do `AGENTS.md` não são sugestão:
    portão verde conferido por código de saída, cobertura ≥98%, duplicação ≤2%, e nada de anunciar
    conclusão sem exercitar o caminho que o usuário percorre.
-2. Ler `design-system.md` antes de mexer em qualquer tela.
+2. Ler `design-system.md` antes de mexer em qualquer tela. A fatia 6 é toda tela.
 3. Subir o ambiente:
 
 ```bash
@@ -323,42 +332,58 @@ npm run portao     # tem de sair com código 0
 
 **O Docker Desktop cai entre sessões nesta máquina.** Se `npm run db:up` falhar, abrir o Docker
 Desktop e esperar o daemon responder antes de tentar de novo. Sem ele, `test:db` e `test:e2e` não
-rodam — e sem eles não há portão verde, logo não há commit.
+rodam — e sem eles não há portão verde, logo não se commita.
 
-### O que falta para fechar a fatia 5
+**Conferir o código de saída do portão de verdade.** `npm run portao | tail` devolve o código do
+`tail`, não o do portão. Redirecionar para arquivo e ler `$?` depois.
 
-A lógica do worker está pronta e coberta em 100%: `src/worker/decisoes.ts` (o que fazer com cada
-item) e `src/worker/drenar.ts` (o laço). Falta **apenas a camada que liga isso ao banco**:
+### O que vem agora: fatia 6, as telas do fluxo
 
-1. `src/worker/supabase/repositorio.ts` — implementar `RepositorioDoWorker` de `src/worker/portas.ts`
-   usando `criarClienteAdmin()`. As funções SQL já existem: `reservar_agendamentos`,
-   `reservar_outbox`, `agendar_passo`, `registrar_resposta_do_cliente`, `mover_oportunidade`.
-2. `src/worker/supabase/mensageiro.ts` e `espelho.ts` — adaptar `criarWhatsappStub()` e
-   `criarCrmStub()` às portas `Mensageiro` e `Espelho`.
-3. `src/worker/executar.ts` — o tique: monta as dependências, chama `drenar`, registra o balanço.
-   Agendar por `pg_cron` ou cron da Vercel, a cada minuto.
-4. Acrescentar os adaptadores à lista de exclusão de cobertura em `vitest.config.mts`, com
-   justificativa escrita — eles são adaptadores, como `cliente-servidor.ts`, e quem os cobre é o
-   teste de integração.
-5. Teste de integração em `testes/jornada/` que percorra uma régua inteira contra o banco real:
-   agendar, drenar, avançar, e conferir que responder cancela o que sobrou.
+O motor está pronto e coberto. O que falta é o produto ficar percorrível por quem vende. O plano
+está em `PLANO-ESQUELETO.md`; o desenho, em `design-system.md`.
+
+- `/app` — o início que responde "o que preciso fazer agora", a fila, o atendimento com o contexto
+  de §9.5, cotação, proposta, pendências e carteira.
+- `/gestor` — funil, SLA, produtividade.
+- `/admin` — corretoras, usuários, saúde das integrações.
+- Mobile primeiro, 1 a 2 cliques, acessibilidade (§5.4). Todo Client Component recebe DTO.
+- `CartaoOportunidade` e o componente `Estado` saem do papel aqui — marcador geométrico, **nunca**
+  cápsula colorida. Especificação nas seções 9 e 10 do `design-system.md`.
+
+**Aceite:** a jornada completa é percorrível pela interface, em um telefone.
+
+Como a cobertura se sustenta em código de tela: páginas e layouts ficam finos, só composição, e
+`src/app/**` já está fora do denominador (`vitest.config.mts`). Toda decisão vive em módulo puro que
+recebe dependência por parâmetro. Retrofitar cobertura de UI depois custa muito mais.
 
 ### Armadilhas já conhecidas
 
 - **Não mude `etapa` por `update`.** O gatilho recusa; use `mover_oportunidade()`. Isso vale
-  inclusive para limpeza de teste — já tropecei nisso.
+  inclusive para limpeza de teste.
 - **`revoke ... from public` corta o `service_role`**, que herda de `public`. Toda função nova que o
   worker chame precisa de `grant execute ... to service_role` explícito.
+- **`service_role` também não recebe DML de tabela nova.** `auto_expose_new_tables` está desligado no
+  `config.toml`, que é o padrão novo da nuvem. Tabela que o worker escreve precisa de
+  `grant select, update ... to service_role`. O sintoma é `permission denied for table` só no
+  caminho da Data API — a conexão direta do teste continua funcionando e esconde o problema.
 - **O PostgREST expande composto nulo** num objeto de campos nulos. Testar `data === null` dá sempre
   falso; conferir um campo, como `data?.id`.
 - **Identificador sintético em teste precisa ser único por execução**, senão o teste encontra o dado
   da rodada anterior. Ver a semente em `testes/jornada/duplicidade.test.ts`.
-- **O ESLint limita a 4 parâmetros.** Acima disso, objeto nomeado.
+- **O ESLint limita a 4 parâmetros e 50 linhas por função.** Acima disso, objeto nomeado e quebra em
+  partes nomeadas.
+- **`server-only` lança dentro do Vitest.** `vitest.db.config.mts` resolve o pacote para o `empty.js`
+  dele por alias. Declarar a condição `react-server` no `resolve` global parece mais elegante e
+  quebra o `pg`, que troca de entrada conforme ela.
+- **A reserva do worker é global**, uma fila só para todos os tenants. Teste que drena precisa
+  neutralizar o que os outros arquivos deixaram pendente antes de afirmar qualquer coisa — ver
+  `limparFilaAlheia` em `testes/jornada/worker.test.ts`.
+- **As portas locais são 5532x** (API 55321, banco 55322, Studio 55323, e-mail 55324). Ver D58.
 
-### Depois da fatia 5
+### Quando existir produção
 
-Fatia 6 — as telas do fluxo, usando o design system já implementado. É quando `CartaoOportunidade` e
-o componente `Estado` (marcador geométrico, nunca cápsula colorida) saem do papel; a especificação
-dos dois está em `design-system.md`, seções 9 e 10.
+As migrations sobem por `supabase db push` contra o projeto remoto, com `supabase link` feito uma
+vez. Nada disso é necessário enquanto o desenvolvimento for local: `npm run db:reset` aplica tudo do
+zero em segundos e é assim que o portão roda.
 
 ---

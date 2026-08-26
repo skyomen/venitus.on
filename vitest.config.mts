@@ -39,6 +39,20 @@ export default defineConfig({
         'src/dados/cliente-servidor.ts',
         'src/dados/cliente-admin.ts',
 
+        // Adaptadores do worker. `repositorio.ts` é chamada ao banco e
+        // `conectores.ts` é a costura entre as portas e o contrato de conector;
+        // nenhum dos dois decide nada. A decisão está em `worker/decisoes.ts`, o
+        // laço em `worker/drenar.ts` e a tradução das linhas em
+        // `worker/supabase/mapeamento.ts` — os três puros e cobertos. Quem
+        // verifica estes dois é `testes/jornada/worker.test.ts`, que percorre uma
+        // régua inteira contra o Postgres real.
+        'src/worker/supabase/repositorio.ts',
+        'src/worker/supabase/conectores.ts',
+
+        // O tique: monta as dependências e chama `drenar`. Composição pura, sem
+        // ramo próprio. Exercitado ponta a ponta pela rota de cron.
+        'src/worker/executar.ts',
+
         // Chamada ao Auth mais redirecionamento. Toda a decisão está em
         // `perfil.ts` e `autorizacao.ts`.
         'src/seguranca/sessao.ts',

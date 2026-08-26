@@ -128,3 +128,43 @@ values
     'LANDING_PAGE',
     '00000000-0000-4000-8000-000000000201'
   );
+
+-- ---------------------------------------------------------------------------
+-- Horário de atendimento
+--
+-- É ele que decide se uma régua pode disparar agora (blueprint §11.2). Sem
+-- nenhuma janela cadastrada, o portão bloqueia tudo por FORA_DO_HORARIO — e a
+-- corretora recém-criada pareceria estar com o motor quebrado.
+--
+-- `dia_semana` segue `extract(dow)`: 0 é domingo. Segunda a sexta das 8 às 18,
+-- sábado das 8 ao meio-dia, como a operação real.
+-- ---------------------------------------------------------------------------
+insert into public.horario_atendimento (corretora_id, dia_semana, inicio, fim)
+select c.id, d.dia, d.inicio, d.fim
+from public.corretora c
+cross join (values
+  (1, time '08:00', time '18:00'),
+  (2, time '08:00', time '18:00'),
+  (3, time '08:00', time '18:00'),
+  (4, time '08:00', time '18:00'),
+  (5, time '08:00', time '18:00'),
+  (6, time '08:00', time '12:00')
+) as d(dia, inicio, fim);
+
+-- ---------------------------------------------------------------------------
+-- Templates da régua de abertura
+--
+-- Fora da janela de 24 h só sai template aprovado (§11.4), e a régua de abertura
+-- é justamente uma sequência deles. Sem `aprovado_em` o disparo falha — que é o
+-- comportamento certo, mas deixaria a stack local sem nenhum caminho feliz.
+-- ---------------------------------------------------------------------------
+insert into public.template_mensagem (corretora_id, codigo, canal, corpo, aprovado_em)
+select c.id, t.codigo, 'WHATSAPP', t.corpo, now()
+from public.corretora c
+cross join (values
+  ('01_primeiro_contato', 'Olá, {{1}}! Aqui é da corretora. Recebemos seu pedido de cotação.'),
+  ('02_abertura', 'Oi, {{1}}! Conseguiu ver nossa mensagem sobre a cotação?'),
+  ('03_primeiro_contato', 'Olá, {{1}}! Ainda dá tempo de seguir com a cotação do seu seguro.'),
+  ('04_abertura', 'Oi, {{1}}! Sua cotação continua disponível. Quer retomar?'),
+  ('05_primeiro_contato', 'Olá, {{1}}! Última tentativa por aqui. Quando quiser, é só chamar.')
+) as t(codigo, corpo);

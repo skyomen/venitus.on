@@ -1,5 +1,9 @@
 import { criarValidadoresStub } from './validadores/stub';
 import type { Validadores } from './validadores/contrato';
+import { criarWhatsappStub } from './whatsapp/stub';
+import type { CanalWhatsapp } from './whatsapp/contrato';
+import { criarCrmStub } from './crm/stub';
+import type { Crm } from './crm/contrato';
 
 /**
  * Escolhe a implementação de cada conector.
@@ -15,20 +19,35 @@ import type { Validadores } from './validadores/contrato';
 
 export type Implementacao = 'real' | 'stub';
 
-const VALIDADORES: Partial<Record<Implementacao, () => Validadores>> = {
-  // `real` entra quando a API existir. Até lá, pedir por ele falha.
-  stub: criarValidadoresStub,
-};
+type Catalogo<T> = Partial<Record<Implementacao, () => T>>;
 
-export function obterValidadores(implementacao: Implementacao): Validadores {
-  const fabrica = VALIDADORES[implementacao];
+function escolher<T>(familia: string, catalogo: Catalogo<T>, implementacao: Implementacao): T {
+  const fabrica = catalogo[implementacao];
 
   if (fabrica === undefined) {
     throw new Error(
-      `Conector de validadores "${implementacao}" não está registrado. ` +
+      `Conector de ${familia} "${implementacao}" não está registrado. ` +
         'Configure a corretora para "stub" enquanto a API real não existir.',
     );
   }
 
   return fabrica();
+}
+
+// `real` entra em cada família quando a API dela existir. Até lá, pedir por ele
+// falha.
+const VALIDADORES: Catalogo<Validadores> = { stub: criarValidadoresStub };
+const WHATSAPP: Catalogo<CanalWhatsapp> = { stub: criarWhatsappStub };
+const CRM: Catalogo<Crm> = { stub: criarCrmStub };
+
+export function obterValidadores(implementacao: Implementacao): Validadores {
+  return escolher('validadores', VALIDADORES, implementacao);
+}
+
+export function obterCanalWhatsapp(implementacao: Implementacao): CanalWhatsapp {
+  return escolher('whatsapp', WHATSAPP, implementacao);
+}
+
+export function obterCrm(implementacao: Implementacao): Crm {
+  return escolher('crm', CRM, implementacao);
 }
