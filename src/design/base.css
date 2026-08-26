@@ -536,6 +536,124 @@ p {
   user-select: all;
 }
 
+/* ==========================================================================
+   MEDIDOR DE INTENÇÃO — nível, forma e cor para o mesmo dado
+   Não é pílula: é um medidor que enche conforme a temperatura, com a palavra
+   ao lado. Quem não distingue matiz lê o nível e a palavra.
+   ========================================================================== */
+.medidor {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  white-space: nowrap;
+}
+
+.medidor-tracos {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 0.75rem;
+}
+
+.medidor-traco {
+  width: 3px;
+  background: var(--borda-sutil);
+  border-radius: 1px;
+}
+
+.medidor-traco:nth-child(1) {
+  height: 40%;
+}
+.medidor-traco:nth-child(2) {
+  height: 70%;
+}
+.medidor-traco:nth-child(3) {
+  height: 100%;
+}
+
+.medidor-palavra {
+  font-size: var(--t-apoio);
+  color: var(--texto-fraco);
+}
+
+.medidor[data-nivel='1'] .medidor-traco[data-aceso] {
+  background: var(--texto-fraco);
+}
+
+.medidor[data-nivel='2'] .medidor-traco[data-aceso] {
+  background: var(--atencao);
+}
+
+.medidor[data-nivel='3'] .medidor-traco[data-aceso] {
+  background: var(--quente);
+}
+
+.medidor[data-nivel='3'] .medidor-palavra {
+  color: var(--quente);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   CARTÃO DE OPORTUNIDADE
+   O que o consultor lê antes de abrir a conversa (blueprint §9.5).
+   ========================================================================== */
+.cartao-oportunidade {
+  background: var(--painel-fundo);
+  border: 1px solid var(--borda-sutil);
+  border-radius: var(--raio-2);
+  padding: var(--linha-padding-y) var(--linha-padding-x);
+  display: grid;
+  gap: var(--e3);
+}
+
+.cartao-oportunidade-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e2);
+}
+
+.cartao-oportunidade-nome {
+  font-size: var(--t-bloco);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.cartao-oportunidade-fatos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--e2);
+  margin: 0;
+}
+
+.cartao-oportunidade-fatos dd {
+  margin: 0;
+  color: var(--texto-forte);
+}
+
+/* Alvo confortável no telefone: a ação ocupa a largura toda (§5.4). */
+.cartao-oportunidade-acao .botao {
+  width: 100%;
+}
+
+/* ==========================================================================
+   LISTA DA FILA
+   ========================================================================== */
+.fila {
+  display: grid;
+  gap: var(--e3);
+}
+
+.vazio {
+  display: grid;
+  gap: var(--e2);
+  justify-items: start;
+  padding: var(--e5) var(--linha-padding-x);
+  background: var(--painel-fundo);
+  border: 1px dashed var(--borda-sutil);
+  border-radius: var(--raio-2);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::after {

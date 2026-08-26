@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { booleano, data, inteiro, janelas, objeto, texto } from './leitura';
+import { booleano, data, inteiro, objeto, texto } from './leitura';
 
 describe('objeto', () => {
   it('aceita objeto', () => {
@@ -61,34 +61,5 @@ describe('data', () => {
     expect(data('ontem à tarde')).toBeNull();
     expect(data(null)).toBeNull();
     expect(data({ ano: 2026 })).toBeNull();
-  });
-});
-
-describe('janelas do dia', () => {
-  it('lê o par de minutos', () => {
-    expect(
-      janelas([
-        [480, 1080],
-        [1200, 1260],
-      ]),
-    ).toEqual([
-      [480, 1080],
-      [1200, 1260],
-    ]);
-  });
-
-  it('converte o numeric que o jsonb pode trazer como texto', () => {
-    expect(janelas([['480', '1080']])).toEqual([[480, 1080]]);
-  });
-
-  it('descarta a janela malformada em vez de virar NaN', () => {
-    // NaN em comparação dá sempre falso, e o portão bloquearia o dia inteiro
-    // sem dizer por quê.
-    expect(janelas([[480], [480, 'meio-dia'], 'nada', [480, 1080]])).toEqual([[480, 1080]]);
-  });
-
-  it('sem janela cadastrada, lista vazia', () => {
-    expect(janelas(null)).toEqual([]);
-    expect(janelas([])).toEqual([]);
   });
 });

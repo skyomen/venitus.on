@@ -1,4 +1,12 @@
+import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
+
+// O E2E monta o próprio cenário no banco, então precisa das mesmas variáveis
+// que a aplicação usa. Sem isto, o segredo do webhook e a URL do banco cairiam
+// em valores de mentira e o teste passaria pelo motivo errado.
+if (existsSync('.env')) {
+  process.loadEnvFile('.env');
+}
 
 /**
  * Testes de ponta a ponta.

@@ -4,6 +4,7 @@ import type { ItemAgendado } from '../portas';
 import {
   classificarAgendamentos,
   classificarOutbox,
+  janelas,
   montarContextoDoDisparo,
   paraResultadoDoEnvio,
   posicaoDoPasso,
@@ -290,5 +291,34 @@ describe('resultado do conector para a decisão', () => {
 
     expect(resultado.ok).toBe(false);
     expect(resultado.falha?.motivo).toBe('INDISPONIVEL');
+  });
+});
+
+describe('janelas do dia', () => {
+  it('lê o par de minutos', () => {
+    expect(
+      janelas([
+        [480, 1080],
+        [1200, 1260],
+      ]),
+    ).toEqual([
+      [480, 1080],
+      [1200, 1260],
+    ]);
+  });
+
+  it('converte o numeric que o jsonb pode trazer como texto', () => {
+    expect(janelas([['480', '1080']])).toEqual([[480, 1080]]);
+  });
+
+  it('descarta a janela malformada em vez de virar NaN', () => {
+    // NaN em comparação dá sempre falso, e o portão bloquearia o dia inteiro
+    // sem dizer por quê.
+    expect(janelas([[480], [480, 'meio-dia'], 'nada', [480, 1080]])).toEqual([[480, 1080]]);
+  });
+
+  it('sem janela cadastrada, lista vazia', () => {
+    expect(janelas(null)).toEqual([]);
+    expect(janelas([])).toEqual([]);
   });
 });

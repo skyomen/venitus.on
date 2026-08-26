@@ -7,7 +7,8 @@ Atualize na mesma sessão em que a decisão ou descoberta acontecer.
 
 ## 1. Onde estamos
 
-**Fase:** fatias 0 a 5 entregues e verdes. O motor da operação está de pé; falta a interface.
+**Fase:** fatias 0 a 5 entregues e verdes. A fatia 6 começou: a fila do consultor já é percorrível
+no navegador.
 
 O blueprint (`Blueprint estructure - SaaS.md`) foi reescrito para este produto: stack Supabase, fronteira
 de segurança do navegador, RLS, modelo de dados, máquina de estados, conectores e motor de follow-up.
@@ -16,7 +17,7 @@ O modelo de tenant foi auditado contra as regras de negócio (seção 6) e as la
 corrigidas no blueprint. As regras de qualidade, Docker e modos de dados estão registradas como spec em
 `AGENTS.md`.
 
-**Próximo marco:** fatia 6 — as telas do fluxo. Ver a seção 10, "Retomada", logo abaixo.
+**Próximo marco:** 6.2 — o atendimento com o contexto de §9.5, cotação e proposta. Ver a seção 10.
 
 **Repositório:** `https://github.com/skyomen/venitus.on.git` — existe e está vazio.
 Identidade dos commits: `meyksonLeite <meyksonleite@gmail.com>`.
@@ -119,6 +120,10 @@ enviada ao cliente + carteirinha → valor líquido no CRM → cadastro no Sics 
 | D22 | 2026-08-25 | Uma tabela de risco por ramo. `risco_veiculo` é de automóvel; o contrato do conector recebe o risco como tipo discriminado.                                                                                                                                                                            |
 | D23 | 2026-08-25 | Mobile primeiro e acessibilidade como critério de aceite — a experiência é o diferencial declarado na visão.                                                                                                                                                                                           |
 | D24 | 2026-08-25 | Região de dados brasileira, subprocessadores listados e plano de resposta a incidente escrito antes de precisar dele.                                                                                                                                                                                  |
+| D59 | 2026-08-26 | **A fila entrega; o consultor não escolhe.** Não existe função nem botão para assumir uma oportunidade específica: escolher a dedo desmontaria a ordem de §9.4, e o lead frio que envelhece nunca mais seria atendido.                                                                                 |
+| D60 | 2026-08-26 | **A tela chama `assumir_proxima_da_fila()`, que não recebe parâmetro.** A identidade vem de `auth.uid()`. `distribuir_proxima(uuid)` segue fechada para `authenticated`: liberá-la deixaria um consultor atribuir trabalho a outra pessoa.                                                             |
+| D61 | 2026-08-26 | **Espera confortável até 15 min, limite em 60.** Não há número fechado no blueprint; este é o padrão até a corretora configurar o dela. Quinze minutos é o tempo em que o cliente ainda lembra que pediu cotação; uma hora parado é lead esfriando.                                                    |
+| D62 | 2026-08-26 | **Consulta de leitura é adaptador**, fora da cobertura de unidade e verificada por integração e E2E. A decisão do que aparece vive em `nucleo/fila/cartao.ts` e a interpretação das linhas em `nucleo/fila/leitura.ts`.                                                                                |
 | D53 | 2026-08-26 | **O contexto de um disparo sai numa consulta só** (`contexto_do_disparo`). As sete condições do portão moram em cinco tabelas; buscá-las em cinco viagens deixaria o worker decidir sobre um retrato inconsistente — o cliente responde no meio do caminho e a régua dispara mesmo assim.              |
 | D54 | 2026-08-26 | **`DESISTIU` é um status do outbox.** A reserva pega `PENDENTE` e `FALHOU`, então `FALHOU` significa "vai tentar de novo". Empurrar `proxima_tentativa_em` para daqui a cem anos funcionaria e mentiria para quem lesse a tabela.                                                                      |
 | D55 | 2026-08-26 | **`agendamento.motivo` existe.** `CANCELADO` pode ser "o consultor assumiu a conversa" ou "o cliente pediu para não receber mensagens", e quem investiga um follow-up que não saiu precisa saber qual dos dois foi.                                                                                    |
@@ -296,6 +301,7 @@ Dois defeitos reais apareceram por escrever o teste junto com o código:
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-25 | Leitura completa dos 4 documentos. Criados `AGENTS.md` e `MEMORY.md`. Levantadas as decisões A1–A7.                                                                                                                                                                               |
 | 2026-08-25 | Blueprint reescrito para o produto: Supabase, fronteira do navegador, RLS, modelo de dados, jornada, conectores e follow-up. Fechadas D3–D8; A1 resolvida. Removidas todas as referências a produtos de terceiros.                                                                |
+| 2026-08-26 | **Fatia 6.1 entregue.** A fila do consultor no navegador: `Estado`, `MedidorDeIntencao` e `CartaoOportunidade`; DTO de §9.5; leitura sob RLS; puxar o próximo; início com números reais. 632 testes de unidade a 100%, 257 de integração, 41 E2E. Fechadas D59–D62.               |
 | 2026-08-26 | **Fatia 5 fechada.** Adaptadores do worker ao Supabase, `contexto_do_disparo`, mensagem contextual e teste de integração percorrendo a régua inteira. Portão verde por código de saída: 565 testes de unidade a 100%, 245 de integração, 33 E2E, 0 clones. Fechadas D53–D58.      |
 | 2026-08-25 | **Fatia 5, segunda metade.** Conector de CRM com stub honesto, decisões do worker e laço de drenagem com isolamento de falha. 469 testes de unidade, 100% de cobertura. Fechadas D50–D52. Falta só a camada de adaptadores ao banco — ver seção 10.                               |
 | 2026-08-25 | **Fatia 5, primeira metade.** Prioridade da fila, distribuição com `SKIP LOCKED` e capacidade, três réguas com cadências reais, portão único de envio, disjuntor e reexecução, conector de WhatsApp com stub honesto. Fechadas D45–D49.                                           |
@@ -337,18 +343,27 @@ rodam — e sem eles não há portão verde, logo não se commita.
 **Conferir o código de saída do portão de verdade.** `npm run portao | tail` devolve o código do
 `tail`, não o do portão. Redirecionar para arquivo e ler `$?` depois.
 
-### O que vem agora: fatia 6, as telas do fluxo
+### O que vem agora: 6.2, o atendimento
 
-O motor está pronto e coberto. O que falta é o produto ficar percorrível por quem vende. O plano
-está em `PLANO-ESQUELETO.md`; o desenho, em `design-system.md`.
+A fatia 6 está sendo entregue em partes. **6.1 está fechada**: o início com números reais, a fila
+com o cartão de §9.5, e puxar o próximo cliente — tudo exercitado por E2E em perfil de celular.
 
-- `/app` — o início que responde "o que preciso fazer agora", a fila, o atendimento com o contexto
-  de §9.5, cotação, proposta, pendências e carteira.
+Falta:
+
+- **6.2** — a tela de atendimento com o contexto da conversa, cotação, proposta e pendências. É
+  onde `plano_de_interesse` finalmente ganha origem no esquema: hoje o cartão omite a linha porque
+  nada a registra.
+- **6.3** — `/gestor`: funil, SLA, produtividade.
+- **6.4** — `/admin`: corretoras, usuários, saúde das integrações.
+
+O plano está em `PLANO-ESQUELETO.md`; o desenho, em `design-system.md`.
+
+- `/app` — resta o atendimento com o contexto de §9.5, cotação, proposta, pendências e carteira.
 - `/gestor` — funil, SLA, produtividade.
 - `/admin` — corretoras, usuários, saúde das integrações.
 - Mobile primeiro, 1 a 2 cliques, acessibilidade (§5.4). Todo Client Component recebe DTO.
-- `CartaoOportunidade` e o componente `Estado` saem do papel aqui — marcador geométrico, **nunca**
-  cápsula colorida. Especificação nas seções 9 e 10 do `design-system.md`.
+- `CartaoOportunidade`, `Estado` e `MedidorDeIntencao` já existem, em `componentes/base` e
+  `componentes/dominio`. Marcador geométrico e medidor de três traços, **nunca** cápsula colorida.
 
 **Aceite:** a jornada completa é percorrível pela interface, em um telefone.
 

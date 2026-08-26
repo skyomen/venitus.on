@@ -8,7 +8,7 @@ import type { Regua } from '@/nucleo/followup/regua';
 import type { DonoConversa } from '@/nucleo/followup/portao-de-envio';
 import type { ResultadoDoEnvio } from '../decisoes';
 import type { ContextoDoDisparo, ItemAgendado, ItemDeOutbox } from '../portas';
-import { booleano, data, inteiro, janelas, objeto, texto } from './leitura';
+import { booleano, data, inteiro, objeto, texto } from '@/dados/leitura';
 
 /**
  * A tradução entre as linhas do banco e as portas do worker.
@@ -50,6 +50,34 @@ export interface Classificacao<T> {
   readonly recusadas: readonly Recusa[];
   /** Linhas sem conector para drenar. Ficam guardadas, não falham. */
   readonly semConector: readonly string[];
+}
+
+/**
+ * As janelas de atendimento do dia, em minutos desde a meia-noite.
+ *
+ * Uma janela malformada é descartada em vez de virar `NaN`: `NaN` em comparação
+ * dá sempre falso, e o portão bloquearia o dia inteiro sem dizer por quê.
+ */
+export function janelas(valor: unknown): readonly (readonly [number, number])[] {
+  if (!Array.isArray(valor)) {
+    return [];
+  }
+
+  const lidas: (readonly [number, number])[] = [];
+
+  for (const bruta of valor) {
+    if (!Array.isArray(bruta) || bruta.length !== 2) {
+      continue;
+    }
+    const inicio = Number(bruta[0]);
+    const fim = Number(bruta[1]);
+
+    if (Number.isFinite(inicio) && Number.isFinite(fim)) {
+      lidas.push([inicio, fim] as const);
+    }
+  }
+
+  return lidas;
 }
 
 function ehRegua(valor: unknown): valor is Regua {

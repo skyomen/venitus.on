@@ -64,6 +64,14 @@ export default defineConfig({
 
         // Tipos gerados a partir do schema do banco.
         'src/dados/tipos-gerados.ts',
+
+        // Consultas de leitura: montam a chamada ao PostgREST e entregam o DTO.
+        // A decisão de o que aparece vive em `nucleo/fila/cartao.ts` e a
+        // interpretação das linhas em `nucleo/fila/leitura.ts`, ambas puras e
+        // cobertas. O que sobra aqui é a consulta, e o que ela precisa provar —
+        // que a RLS recorta o tenant e que a ordem é a da fila — só um banco de
+        // verdade prova. Quem verifica é `testes/jornada/fila-do-consultor.test.ts`.
+        'src/dados/consultas/**',
       ],
 
       thresholds: {

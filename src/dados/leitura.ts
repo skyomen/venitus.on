@@ -33,31 +33,3 @@ export function data(valor: unknown): Date | null {
   const convertida = new Date(valor);
   return Number.isNaN(convertida.getTime()) ? null : convertida;
 }
-
-/**
- * As janelas de atendimento do dia, em minutos desde a meia-noite.
- *
- * Uma janela malformada é descartada em vez de virar `NaN`: `NaN` em comparação
- * dá sempre falso, e o portão bloquearia o dia inteiro sem dizer por quê.
- */
-export function janelas(valor: unknown): readonly (readonly [number, number])[] {
-  if (!Array.isArray(valor)) {
-    return [];
-  }
-
-  const lidas: (readonly [number, number])[] = [];
-
-  for (const bruta of valor) {
-    if (!Array.isArray(bruta) || bruta.length !== 2) {
-      continue;
-    }
-    const inicio = Number(bruta[0]);
-    const fim = Number(bruta[1]);
-
-    if (Number.isFinite(inicio) && Number.isFinite(fim)) {
-      lidas.push([inicio, fim] as const);
-    }
-  }
-
-  return lidas;
-}

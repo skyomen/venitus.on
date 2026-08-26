@@ -91,6 +91,41 @@ export async function lerComoUsuario(token: string | null, caminho: string): Pro
   };
 }
 
+/**
+ * Chama uma função do banco pela porta da aplicação.
+ *
+ * Não é o mesmo que `select public.f()` pela conexão direta: aqui a chamada
+ * passa pelo PostgREST com o papel `authenticated`, então o `grant` e o
+ * `auth.uid()` são exercitados de verdade.
+ */
+export async function chamarComoUsuario(
+  token: string | null,
+  funcao: string,
+  argumentos: Record<string, unknown> = {},
+): Promise<RespostaRest> {
+  const cabecalhos: Record<string, string> = {
+    apikey: CHAVE_ANON,
+    'Content-Type': 'application/json',
+  };
+  if (token !== null) {
+    cabecalhos['Authorization'] = `Bearer ${token}`;
+  }
+
+  const resposta = await fetch(`${URL_API}/rest/v1/rpc/${funcao}`, {
+    method: 'POST',
+    headers: cabecalhos,
+    body: JSON.stringify(argumentos),
+  });
+
+  const texto = await resposta.text();
+  const corpo: unknown = texto === '' ? null : JSON.parse(texto);
+
+  return {
+    status: resposta.status,
+    linhas: corpo === null ? [] : [corpo as Record<string, unknown>],
+  };
+}
+
 export interface RespostaEscrita {
   readonly status: number;
   readonly codigo: string | null;
